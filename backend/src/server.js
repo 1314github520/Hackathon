@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
@@ -9,7 +11,14 @@ const { validateAircraftPayload } = require("./validation");
 
 const PORT = Number(process.env.PORT || 9001);
 const app = express();
-const allowedOrigins = String(process.env.CORS_ALLOWED_ORIGINS || "")
+const defaultAllowedOrigins = [
+  "https://heikesong.mexqf.top",
+  "http://localhost:9000",
+  "http://127.0.0.1:9000",
+  "http://localhost:4173",
+  "http://127.0.0.1:4173",
+];
+const allowedOrigins = String(process.env.CORS_ALLOWED_ORIGINS || defaultAllowedOrigins.join(","))
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);

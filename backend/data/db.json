@@ -10,7 +10,7 @@
       "email": "admin@flyer.local",
       "phone": "",
       "avatarUrl": "",
-      "lastLoginAt": "2026-05-17T09:34:07.864Z",
+      "lastLoginAt": "2026-05-17T10:22:50.582Z",
       "createdAt": "2026-05-17T06:41:57.473Z",
       "updatedAt": "2026-05-17T06:41:57.473Z"
     },
@@ -160,6 +160,28 @@
       "createdAt": "2026-05-17T09:34:07.932Z",
       "expiresAt": "2026-05-17T10:34:07.932Z",
       "refreshExpiresAt": "2026-05-24T09:34:07.932Z",
+      "revokedAt": null
+    },
+    {
+      "id": "61a26b1e-250a-4c7f-aedb-97bb68fbe1a6",
+      "userId": "user-admin",
+      "userType": "admin_user",
+      "accessToken": "f17b08d1f9fe0c2f04e231d561a63eeb884f17cd918639b8",
+      "refreshToken": "311bab9fec00218631d484f703a9699a025add47527b3417",
+      "createdAt": "2026-05-17T09:52:05.678Z",
+      "expiresAt": "2026-05-17T10:52:05.678Z",
+      "refreshExpiresAt": "2026-05-24T09:52:05.678Z",
+      "revokedAt": null
+    },
+    {
+      "id": "31208f64-4553-4c38-8e05-10533578841b",
+      "userId": "user-admin",
+      "userType": "admin_user",
+      "accessToken": "2c793a666bf52332002e2e7a9b7c787020c5c2b78ba3320b",
+      "refreshToken": "585d83e53e39b6d2b7dba7e24dbe52c68d1268d46e0c7cd5",
+      "createdAt": "2026-05-17T10:22:50.581Z",
+      "expiresAt": "2026-05-17T11:22:50.581Z",
+      "refreshExpiresAt": "2026-05-24T10:22:50.581Z",
       "revokedAt": null
     }
   ],
@@ -374,6 +396,26 @@
   ],
   "reviewComments": [],
   "auditLogs": [
+    {
+      "id": "4a54be1c-5c5a-4232-92da-0e69d0b08b25",
+      "createdAt": "2026-05-17T10:22:50.582Z",
+      "operatorId": "user-admin",
+      "operatorName": "admin",
+      "action": "admin_login",
+      "entityType": "auth",
+      "entityId": "user-admin",
+      "summary": "管理员登录成功"
+    },
+    {
+      "id": "5fd08fa6-3a39-4569-8514-ae2e6db16a27",
+      "createdAt": "2026-05-17T09:52:05.679Z",
+      "operatorId": "user-admin",
+      "operatorName": "admin",
+      "action": "admin_login",
+      "entityType": "auth",
+      "entityId": "user-admin",
+      "summary": "管理员登录成功"
+    },
     {
       "id": "5f282def-7ef6-4ef6-83bc-62b95000b173",
       "createdAt": "2026-05-17T09:34:07.864Z",

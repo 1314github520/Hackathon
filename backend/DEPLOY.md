@@ -25,9 +25,10 @@ cp .env.example .env
 默认配置如下：
 
 ```env
-PORT=3001
+PORT=9001
 DATABASE_PROVIDER=mysql
 DATABASE_URL="mysql://flyer:your_password@127.0.0.1:3306/flyer_guide"
+CORS_ALLOWED_ORIGINS=https://heikesong.mexqf.top,http://localhost:9000,http://127.0.0.1:9000
 ```
 
 ### 1.4 启动本地服务
@@ -38,8 +39,8 @@ npm run dev
 
 默认启动地址：
 
-- 后端 API：`http://localhost:3001`
-- 健康检查：`http://localhost:3001/health`
+- 后端 API：`http://localhost:9001`
+- 健康检查：`http://localhost:9001/health`
 
 默认本地演示账号：
 
@@ -57,7 +58,7 @@ npm run dev
 原型脚本里已经把 API 基地址写为：
 
 ```text
-http://localhost:3001
+http://localhost:9001
 ```
 
 因此只要同时启动前端静态服务和后端服务即可联调。
@@ -137,8 +138,8 @@ cp .env.server .env
 把 `.env` 改成：
 
 ```env
-PORT=3001
-CORS_ALLOWED_ORIGINS=http://8.162.14.195,http://8.162.14.195:3000,http://8.162.14.195:4173
+PORT=9001
+CORS_ALLOWED_ORIGINS=https://heikesong.mexqf.top,http://localhost:9000,http://127.0.0.1:9000
 DATABASE_PROVIDER=mysql
 DATABASE_URL="mysql://qx:123456@127.0.0.1:3306/Hackathon"
 ```
@@ -163,7 +164,7 @@ DATABASE_PROVIDER=mysql npm run db:seed:mysql
 临时启动：
 
 ```bash
-DATABASE_PROVIDER=mysql npm run dev
+npm run dev
 ```
 
 推荐长期运行方式：
@@ -180,7 +181,8 @@ pm2 startup
 ```bash
 export DATABASE_PROVIDER=mysql
 export DATABASE_URL="mysql://flyer:StrongPassword_123@127.0.0.1:3306/flyer_guide"
-export PORT=3001
+export PORT=9001
+export CORS_ALLOWED_ORIGINS="https://heikesong.mexqf.top,http://localhost:9000,http://127.0.0.1:9000"
 ```
 
 ### 4.8 Nginx 反向代理
@@ -190,10 +192,10 @@ export PORT=3001
 ```nginx
 server {
     listen 80;
-    server_name 8.162.14.195;
+    server_name heikesong.mexqf.top;
 
     location /api/ {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:9001;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -202,7 +204,7 @@ server {
     }
 
     location /uploads/ {
-        proxy_pass http://127.0.0.1:3001;
+        proxy_pass http://127.0.0.1:9001;
         proxy_set_header Host $host;
     }
 }
@@ -217,7 +219,7 @@ server {
 3. 上传项目并配置 `.env`
 4. 执行 `npx prisma db push`
 5. 执行 `DATABASE_PROVIDER=mysql npm run db:seed:mysql`
-6. 用 `curl http://127.0.0.1:3001/health` 检查服务
+6. 用 `curl http://127.0.0.1:9001/health` 检查服务
 7. 最后再接入 `nginx + pm2`
 
 ## 6. 当前说明
