@@ -1,0 +1,172 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String @id
+  username     String @unique
+  passwordHash String
+  userType     String
+  status       String
+  nickname     String
+  email        String
+  phone        String
+  avatarUrl    String
+  lastLoginAt  String?
+  createdAt    String
+  updatedAt    String
+}
+
+model Session {
+  id               String  @id
+  userId           String
+  userType         String
+  accessToken      String  @unique
+  refreshToken     String  @unique
+  createdAt        String
+  expiresAt        String
+  refreshExpiresAt String
+  revokedAt        String?
+
+  @@index([userId])
+}
+
+model Aircraft {
+  id                   String @id
+  slug                 String @unique
+  nameZh               String
+  nameEn               String
+  aircraftType         String
+  manufacturer         String
+  countryOfOrigin      String
+  eraLabel             String
+  firstFlightYear      Int?
+  firstFlightDate      String?
+  serviceEntryDate     String?
+  status               String
+  summary              String
+  description          String
+  source               String
+  sourceUrl            String
+  specSourceConfidence String
+  coverImage           String
+  specs                Json
+  createdAt            String
+  updatedAt            String
+}
+
+model Event {
+  id                 String @id
+  slug               String @unique
+  title              String
+  eventType          String
+  eventDate          String?
+  locationName       String
+  summary            String
+  description        String
+  impact             String
+  relatedAircraftIds Json
+  relatedPersonIds   Json
+  status             String
+  createdAt          String
+  updatedAt          String
+}
+
+model Person {
+  id                 String @id
+  slug               String @unique
+  nameZh             String
+  nameEn             String
+  personType         String
+  nationality        String
+  summary            String
+  biography          String
+  relatedAircraftIds Json
+  relatedEventIds    Json
+  status             String
+  createdAt          String
+  updatedAt          String
+}
+
+model Favorite {
+  id         String @id
+  userId     String
+  entityType String
+  entityId   String
+  createdAt  String
+
+  @@index([userId])
+}
+
+model BrowsingHistory {
+  id            String @id
+  userId        String
+  entityType    String
+  entityId      String
+  viewCount     Int
+  firstViewedAt String
+  lastViewedAt  String
+
+  @@index([userId])
+}
+
+model ApprovalWorkflow {
+  id                String  @id
+  entityType        String
+  entityId          String
+  revisionId        String?
+  submitterId       String
+  currentReviewerId String
+  workflowStatus    String
+  submittedAt       String
+  completedAt       String?
+}
+
+model ApprovalTask {
+  id          String  @id
+  workflowId  String
+  reviewerId  String
+  taskStatus  String
+  decision    String
+  processedAt String?
+  createdAt   String
+
+  @@index([workflowId])
+}
+
+model ReviewComment {
+  id         String @id
+  workflowId String
+  reviewerId String
+  comment    String
+  createdAt  String
+
+  @@index([workflowId])
+}
+
+model AuditLog {
+  id           String @id
+  createdAt    String
+  operatorId   String
+  operatorName String
+  action       String
+  entityType   String
+  entityId     String
+  summary      String
+}
+
+model ContentRevision {
+  id         String @id
+  entityType String
+  entityId   String
+  snapshot   Json
+  createdAt  String
+  createdBy  String
+
+  @@index([entityType, entityId])
+}

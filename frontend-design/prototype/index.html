@@ -1,0 +1,627 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>飞行者图鉴 · 前端高保真原型</title>
+    <meta
+      name="description"
+      content="赛题三飞行者图鉴的前端高保真原型，覆盖搜索、对比、详情、智能问答与后台管理。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar" aria-label="主导航">
+        <div class="brand">
+          <div class="brand-mark" aria-hidden="true">FY</div>
+          <div>
+            <p class="eyebrow">Flyer Atlas</p>
+            <h1>飞行者图鉴</h1>
+          </div>
+        </div>
+        <nav class="nav-list">
+          <button class="nav-item is-active" data-view-target="home">首页导览</button>
+          <button class="nav-item" data-view-target="search">搜索探索</button>
+          <button class="nav-item" data-view-target="aircraft">飞行器详情</button>
+          <button class="nav-item" data-view-target="compare">多机型对比</button>
+          <button class="nav-item" data-view-target="timeline">事件与人物</button>
+          <button class="nav-item" data-view-target="admin">后台管理</button>
+        </nav>
+        <section class="sidebar-card">
+          <p class="card-kicker">评审对齐</p>
+          <ul class="metric-list">
+            <li><span>功能闭环</span><strong>100%</strong></li>
+            <li><span>无障碍等级</span><strong>WCAG AA</strong></li>
+            <li><span>首屏目标 LCP</span><strong>&lt;= 2.5s</strong></li>
+          </ul>
+        </section>
+        <section class="sidebar-card">
+          <p class="card-kicker">当前原型覆盖</p>
+          <p class="muted">
+            首页、搜索、详情、对比、事件人物联动、智能问答、后台录入与质量校验。
+          </p>
+        </section>
+      </aside>
+
+      <main class="main" id="main-content">
+        <header class="topbar">
+          <button class="mobile-menu" id="menu-toggle" aria-label="切换导航">目录</button>
+          <div class="topbar-search">
+            <label class="sr-only" for="global-search">搜索航空器、事件或人物</label>
+            <input
+              id="global-search"
+              type="search"
+              value="喷气时代最有代表性的客机"
+              aria-describedby="search-hint"
+            />
+            <button class="primary-button">自然语言搜索</button>
+          </div>
+          <div class="topbar-actions">
+            <button class="ghost-button" id="assistant-toggle">问问智能助手</button>
+            <button class="status-chip">Demo v1.0</button>
+          </div>
+          <p id="search-hint" class="sr-only">支持自然语言，例如帮我找二战时期的双发轰炸机。</p>
+        </header>
+
+        <section class="view is-active" id="view-home" aria-labelledby="home-title">
+          <div class="hero-panel">
+            <div class="hero-copy">
+              <p class="eyebrow">夜航档案馆</p>
+              <h2 id="home-title">让航空知识从参数表，变成一场可探索的飞行文明漫游。</h2>
+              <p class="hero-text">
+                为非专业用户、航空爱好者与内容运营团队打造的开放型航空科普知识平台。这里不仅能看、能搜、能比，还能继续追问。
+              </p>
+              <div class="hero-actions">
+                <button class="primary-button" data-view-jump="search">开始探索</button>
+                <button class="ghost-button" data-view-jump="compare">查看机型对比</button>
+              </div>
+            </div>
+            <div class="hero-visual">
+              <div class="hero-globe" aria-hidden="true"></div>
+              <div class="hero-note">
+                <p class="card-kicker">核心展示链路</p>
+                <ol>
+                  <li>搜索航空器 / 事件 / 人物</li>
+                  <li>进入详情并理解核心知识</li>
+                  <li>横向对比不同飞行器</li>
+                  <li>通过智能助手继续学习</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-grid">
+            <article class="glass-panel">
+              <div class="section-head">
+                <div>
+                  <p class="card-kicker">核心模块</p>
+                  <h3>平台能力地图</h3>
+                </div>
+                <span class="badge">100% 覆盖规划</span>
+              </div>
+              <div class="module-grid">
+                <div class="module-card">
+                  <h4>搜索与筛选</h4>
+                  <p>支持关键词和自然语言搜索，返回航空器、事件、人物混合结果。</p>
+                </div>
+                <div class="module-card">
+                  <h4>机型对比</h4>
+                  <p>按尺寸、速度、航程、发动机和首飞年份做统一对照与差异高亮。</p>
+                </div>
+                <div class="module-card">
+                  <h4>智能问答</h4>
+                  <p>把专业知识转换成适合非专业用户理解的结构化回答。</p>
+                </div>
+                <div class="module-card">
+                  <h4>后台运营</h4>
+                  <p>支持新建条目、字段校验、图片上传、来源标注和发布预览。</p>
+                </div>
+              </div>
+            </article>
+
+            <article class="glass-panel">
+              <div class="section-head">
+                <div>
+                  <p class="card-kicker">精选机型</p>
+                  <h3>适合演示的卡片式浏览</h3>
+                </div>
+                <button class="link-button" data-view-jump="aircraft">打开详情页</button>
+              </div>
+              <div class="aircraft-grid">
+                <article class="aircraft-card">
+                  <img
+                    src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=photorealistic%20wide-body%20airliner%20on%20runway%20at%20sunset%2C%20editorial%20aviation%20photography%2C%20clean%20sky%2C%20high%20detail%2C%20museum-quality&image_size=landscape_16_9"
+                    alt="现代宽体客机演示图"
+                  />
+                  <div>
+                    <p class="card-kicker">客机</p>
+                    <h4>空客 A380</h4>
+                    <p>双层宽体、四发远程客机，适合展示尺寸与载客量优势。</p>
+                  </div>
+                </article>
+                <article class="aircraft-card">
+                  <img
+                    src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=historic%20biplane%20flying%20over%20grassy%20field%2C%20early%20aviation%20era%2C%20wood%20and%20fabric%20aircraft%2C%20warm%20editorial%20light%2C%20high%20detail&image_size=landscape_16_9"
+                    alt="早期双翼机演示图"
+                  />
+                  <div>
+                    <p class="card-kicker">先驱机型</p>
+                    <h4>莱特飞行者一号</h4>
+                    <p>适合在时间轴中串联飞行起点与航空文明里程碑。</p>
+                  </div>
+                </article>
+                <article class="aircraft-card">
+                  <img
+                    src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=modern%20fighter%20jet%20parked%20in%20hangar%2C%20cool%20blue%20lighting%2C%20high-detail%20aviation%20photo%2C%20sharp%20metal%20surfaces&image_size=landscape_16_9"
+                    alt="现代战斗机演示图"
+                  />
+                  <div>
+                    <p class="card-kicker">战机</p>
+                    <h4>歼-20</h4>
+                    <p>适合展示速度、机动性与代际背景等高关注参数。</p>
+                  </div>
+                </article>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-search" aria-labelledby="search-title">
+          <div class="section-head wide">
+            <div>
+              <p class="card-kicker">全局搜索</p>
+              <h2 id="search-title">搜索探索页</h2>
+            </div>
+            <div class="filter-pills" role="tablist" aria-label="搜索筛选">
+              <button class="pill is-active">全部</button>
+              <button class="pill">航空器</button>
+              <button class="pill">事件</button>
+              <button class="pill">人物</button>
+            </div>
+          </div>
+
+          <div class="search-layout">
+            <aside class="filter-panel glass-panel">
+              <h3>筛选条件</h3>
+              <div class="filter-group">
+                <span>年代</span>
+                <div class="tag-list">
+                  <button class="tag is-active">喷气时代</button>
+                  <button class="tag">二战时期</button>
+                  <button class="tag">现代航空</button>
+                </div>
+              </div>
+              <div class="filter-group">
+                <span>用途</span>
+                <div class="tag-list">
+                  <button class="tag is-active">客机</button>
+                  <button class="tag">军用</button>
+                  <button class="tag">科研</button>
+                </div>
+              </div>
+              <div class="filter-group">
+                <span>排序方式</span>
+                <select aria-label="排序方式">
+                  <option>按相关性</option>
+                  <option>按首飞年份</option>
+                  <option>按发布时间</option>
+                </select>
+              </div>
+            </aside>
+
+            <div class="result-panel glass-panel">
+              <div class="result-head">
+                <div>
+                  <p class="muted">搜索词：喷气时代最有代表性的客机</p>
+                  <h3>找到 12 个结果</h3>
+                </div>
+                <button class="ghost-button" data-view-jump="compare">加入对比栏</button>
+              </div>
+              <div class="result-list">
+                <article class="result-card">
+                  <div class="result-type">航空器</div>
+                  <div class="result-content">
+                    <h4>空客 A380</h4>
+                    <p>
+                      世界上最大的双层宽体客机之一，适合承载“尺寸”“航程”“发动机类型”等赛题重点参数展示。
+                    </p>
+                    <div class="result-meta">
+                      <span>首飞：2005</span>
+                      <span>发动机：涡扇</span>
+                      <span>航程：15200 km</span>
+                    </div>
+                  </div>
+                  <button class="link-button" data-view-jump="aircraft">查看详情</button>
+                </article>
+                <article class="result-card">
+                  <div class="result-type accent">事件</div>
+                  <div class="result-content">
+                    <h4>喷气时代来临</h4>
+                    <p>聚合首飞、商业服役和技术演进的关键节点，适合与代表机型做时间线联动。</p>
+                    <div class="result-meta">
+                      <span>类型：技术里程碑</span>
+                      <span>关联机型：Comet、707、A380</span>
+                    </div>
+                  </div>
+                  <button class="link-button" data-view-jump="timeline">查看事件</button>
+                </article>
+                <article class="result-card">
+                  <div class="result-type subdued">人物</div>
+                  <div class="result-content">
+                    <h4>乔·萨特</h4>
+                    <p>波音 747 的关键设计人物之一，适合展示“人物 - 机型 - 时代”三者联动。</p>
+                    <div class="result-meta">
+                      <span>身份：工程师</span>
+                      <span>国籍：美国</span>
+                    </div>
+                  </div>
+                  <button class="link-button" data-view-jump="timeline">查看人物</button>
+                </article>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="view-aircraft" aria-labelledby="aircraft-title">
+          <div class="detail-hero">
+            <img
+              class="detail-cover"
+              src="https://coresg-normal.trae.ai/api/ide/v1/text_to_image?prompt=airbus%20A380%20parked%20at%20airport%20gate%2C%20cinematic%20editorial%20aviation%20photography%2C%20detailed%20fuselage%2C%20soft%20evening%20light&image_size=landscape_16_9"
+              alt="空客 A380 演示图"
+            />
+            <div class="detail-summary">
+              <p class="eyebrow">飞行器详情页</p>
+              <h2 id="aircraft-title">空客 A380</h2>
+              <p>
+                世界知名超大型民航客机之一，适合用来演示大尺寸参数展示、客机发展史、发动机信息和相关推荐。
+              </p>
+              <div class="summary-tags">
+                <span>客机</span>
+                <span>空客</span>
+                <span>喷气时代</span>
+                <span>首飞 2005</span>
+              </div>
+              <div class="hero-actions">
+                <button class="primary-button" data-view-jump="compare">加入对比</button>
+                <button class="ghost-button" id="assistant-toggle-inline">问问这架飞机</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-layout">
+            <article class="glass-panel">
+              <div class="section-head">
+                <div>
+                  <p class="card-kicker">核心参数</p>
+                  <h3>结构化参数面板</h3>
+                </div>
+                <span class="badge">可信度：已核实</span>
+              </div>
+              <div class="spec-grid">
+                <div class="spec-card"><span>机长</span><strong>72.72 m</strong></div>
+                <div class="spec-card"><span>翼展</span><strong>79.75 m</strong></div>
+                <div class="spec-card"><span>最大速度</span><strong>1020 km/h</strong></div>
+                <div class="spec-card"><span>航程</span><strong>15200 km</strong></div>
+                <div class="spec-card"><span>发动机类型</span><strong>涡扇</strong></div>
+                <div class="spec-card"><span>发动机数量</span><strong>4</strong></div>
+              </div>
+            </article>
+
+            <article class="glass-panel">
+              <div class="section-head">
+                <div>
+                  <p class="card-kicker">导览式内容</p>
+                  <h3>关联知识与继续学习</h3>
+                </div>
+                <button class="link-button" data-view-jump="timeline">查看时间线</button>
+              </div>
+              <div class="knowledge-stack">
+                <div class="knowledge-card">
+                  <h4>为什么它重要</h4>
+                  <p>它代表了双层宽体客机在商业航空中的巅峰形态，也是大型机场枢纽时代的象征机型。</p>
+                </div>
+                <div class="knowledge-card">
+                  <h4>相关事件</h4>
+                  <p>喷气时代来临、大型远程客机演进、全球干线网络扩张。</p>
+                </div>
+                <div class="knowledge-card">
+                  <h4>相关推荐</h4>
+                  <p>波音 747、协和式客机、空客家族演进。</p>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-compare" aria-labelledby="compare-title">
+          <div class="section-head wide">
+            <div>
+              <p class="card-kicker">横向对比</p>
+              <h2 id="compare-title">多机型对比页</h2>
+            </div>
+            <div class="compare-switches">
+              <button class="pill is-active" id="compare-mode-all">全部字段</button>
+              <button class="pill" id="compare-mode-diff">仅看差异</button>
+            </div>
+          </div>
+
+          <div class="compare-cards">
+            <article class="compare-aircraft">
+              <h3>空客 A380</h3>
+              <p>远程宽体客机</p>
+            </article>
+            <article class="compare-aircraft">
+              <h3>波音 747</h3>
+              <p>经典巨型客机</p>
+            </article>
+            <article class="compare-aircraft">
+              <h3>协和式</h3>
+              <p>超音速客机</p>
+            </article>
+          </div>
+
+          <article class="glass-panel">
+            <div class="compare-summary">
+              <div>
+                <p class="card-kicker">AI 总结</p>
+                <h3>结论先行</h3>
+              </div>
+              <p>
+                A380 在容量与尺寸上优势明显；747 平衡了历史地位与运营通用性；协和式在速度上领先，但航程和商业可持续性存在明显限制。
+              </p>
+            </div>
+            <div class="table-wrap">
+              <table class="compare-table">
+                <thead>
+                  <tr>
+                    <th scope="col">维度</th>
+                    <th scope="col">A380</th>
+                    <th scope="col">747</th>
+                    <th scope="col">协和式</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">机长</th>
+                    <td>72.72 m</td>
+                    <td>70.66 m</td>
+                    <td class="diff-only">61.66 m</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">翼展</th>
+                    <td>79.75 m</td>
+                    <td>64.44 m</td>
+                    <td class="diff-only">25.60 m</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">最大速度</th>
+                    <td class="diff-only">1020 km/h</td>
+                    <td>988 km/h</td>
+                    <td class="diff-only">2179 km/h</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">航程</th>
+                    <td>15200 km</td>
+                    <td>13850 km</td>
+                    <td class="diff-only">7222 km</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">发动机类型</th>
+                    <td>涡扇</td>
+                    <td>涡扇</td>
+                    <td class="diff-only">奥林巴斯 593</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">首飞年份</th>
+                    <td class="diff-only">2005</td>
+                    <td>1969</td>
+                    <td>1969</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section class="view" id="view-timeline" aria-labelledby="timeline-title">
+          <div class="section-head wide">
+            <div>
+              <p class="card-kicker">事件与人物联动</p>
+              <h2 id="timeline-title">时间线与关系页</h2>
+            </div>
+            <button class="ghost-button">知识图谱扩展位</button>
+          </div>
+
+          <div class="timeline-layout">
+            <article class="glass-panel">
+              <h3>喷气时代的关键节点</h3>
+              <div class="timeline-list">
+                <div class="timeline-item">
+                  <span class="timeline-year">1949</span>
+                  <div>
+                    <h4>德哈维兰彗星客机首飞</h4>
+                    <p>喷气客机进入民航视野，开启更高速度和更高高度的商用探索。</p>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-year">1969</span>
+                  <div>
+                    <h4>波音 747 与协和式同时首飞</h4>
+                    <p>一个象征大容量商业干线时代，一个代表极致速度路线。</p>
+                  </div>
+                </div>
+                <div class="timeline-item">
+                  <span class="timeline-year">2005</span>
+                  <div>
+                    <h4>空客 A380 首飞</h4>
+                    <p>双层宽体客机将“航空枢纽时代”的运营逻辑推至高峰。</p>
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="glass-panel">
+              <h3>关联人物</h3>
+              <div class="person-grid">
+                <article class="person-card">
+                  <h4>乔·萨特</h4>
+                  <p>代表作：波音 747。适合挂接“人物 - 机型 - 时代”的学习路径。</p>
+                </article>
+                <article class="person-card">
+                  <h4>杰弗里·蒂利</h4>
+                  <p>用于展示工程人物的技术贡献、所属阶段与事件联动关系。</p>
+                </article>
+                <article class="person-card">
+                  <h4>航空运营决策者</h4>
+                  <p>适合在策展页中说明“技术路线与商业路线”的长期博弈。</p>
+                </article>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="view" id="view-admin" aria-labelledby="admin-title">
+          <div class="section-head wide">
+            <div>
+              <p class="card-kicker">后台管理</p>
+              <h2 id="admin-title">内容运营与质量校验</h2>
+            </div>
+            <div class="topbar-actions">
+              <button class="ghost-button">审计日志</button>
+              <button class="primary-button">新建航空器</button>
+            </div>
+          </div>
+
+          <div class="admin-grid">
+            <article class="glass-panel">
+              <div class="metric-cards">
+                <div class="metric-card">
+                  <span>已发布条目</span>
+                  <strong>128</strong>
+                </div>
+                <div class="metric-card warn">
+                  <span>待补充字段</span>
+                  <strong>17</strong>
+                </div>
+                <div class="metric-card success">
+                  <span>本周修复率</span>
+                  <strong>92%</strong>
+                </div>
+              </div>
+            </article>
+
+            <article class="glass-panel form-panel">
+              <div class="section-head">
+                <div>
+                  <p class="card-kicker">编辑表单</p>
+                  <h3>新增航空器</h3>
+                </div>
+                <button class="ghost-button" id="validate-form">执行字段校验</button>
+              </div>
+
+              <form class="editor-form" id="editor-form">
+                <label>
+                  中文名称
+                  <input type="text" name="name" value="波音 747" />
+                </label>
+                <label>
+                  机型分类
+                  <select name="type">
+                    <option>客机</option>
+                    <option>战斗机</option>
+                    <option>直升机</option>
+                  </select>
+                </label>
+                <label>
+                  首飞年份
+                  <input type="number" name="firstFlight" value="1969" />
+                </label>
+                <label>
+                  最大航程（km）
+                  <input type="number" name="range" placeholder="例如 13850" />
+                </label>
+                <label class="full-width">
+                  一句话简介
+                  <textarea name="summary" rows="3">经典巨型远程客机，用于展示大型喷气客机的发展脉络。</textarea>
+                </label>
+                <label class="full-width">
+                  来源标注
+                  <textarea name="source" rows="2" placeholder="请输入来源标题、链接或出版物"></textarea>
+                </label>
+              </form>
+
+              <div class="validation-panel" id="validation-panel">
+                <h4>质量校验面板</h4>
+                <ul>
+                  <li class="ok">中文名称已填写</li>
+                  <li class="ok">机型分类已选择</li>
+                  <li class="warn">最大航程缺失，建议补充</li>
+                  <li class="warn">来源标注为空，无法满足发布要求</li>
+                </ul>
+              </div>
+
+              <div class="hero-actions">
+                <button class="ghost-button">预览前台效果</button>
+                <button class="primary-button" id="publish-button">提交审核</button>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <aside
+      class="assistant-drawer"
+      id="assistant-drawer"
+      aria-labelledby="assistant-title"
+      aria-hidden="true"
+      hidden
+    >
+      <div class="assistant-head">
+        <div>
+          <p class="card-kicker">飞行者图鉴智能导览助手</p>
+          <h2 id="assistant-title">问问智能助手</h2>
+        </div>
+        <button class="ghost-button small" id="assistant-close">关闭</button>
+      </div>
+      <div class="assistant-body">
+        <article class="assistant-block">
+          <p class="assistant-label">用户问题</p>
+          <p>A380 和 747 最大的差别是什么？我适合先了解哪一架？</p>
+        </article>
+        <article class="assistant-block">
+          <p class="assistant-label">一句话结论</p>
+          <p>
+            如果你想理解大型商业航空的发展脉络，可以先看 747；如果你想理解现代超大容量客机设计，可以再看 A380。
+          </p>
+        </article>
+        <article class="assistant-block">
+          <p class="assistant-label">关键差异</p>
+          <ul>
+            <li>A380 更大、更晚出现，更适合展示现代双层宽体客机设计。</li>
+            <li>747 历史影响更长，更适合串联喷气时代商业航空发展。</li>
+            <li>如果你是入门用户，建议先从 747 切入，再回到 A380 对比。</li>
+          </ul>
+        </article>
+        <article class="assistant-block muted-block">
+          <p class="assistant-label">继续探索</p>
+          <button class="assist-link" data-view-jump="compare">去对比页查看完整参数</button>
+          <button class="assist-link" data-view-jump="timeline">查看喷气时代时间线</button>
+        </article>
+      </div>
+    </aside>
+
+    <div class="toast-stack" aria-live="polite" aria-atomic="true">
+      <div class="toast" id="toast">提审前仍有必填字段缺失，请先补充来源标注。</div>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>

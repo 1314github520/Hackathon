@@ -1,0 +1,25 @@
+{
+  "name": "flyer-guide-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "飞行者图鉴本地 Node.js 后端服务",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed:mysql": "node src/scripts/migrate-json-to-mysql.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
+  }
+}
