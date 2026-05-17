@@ -19,7 +19,7 @@ npm install
 
 ```env
 NEXT_PUBLIC_API_BASE=/api-bridge
-API_SERVER_URL=http://8.162.14.195:3001
+API_SERVER_URL=http://127.0.0.1:9001
 ```
 
 对应文件：
@@ -31,7 +31,7 @@ API_SERVER_URL=http://8.162.14.195:3001
 
 ```env
 NEXT_PUBLIC_API_BASE=/api-bridge
-API_SERVER_URL=http://127.0.0.1:3001
+API_SERVER_URL=http://127.0.0.1:9001
 ```
 
 对应文件：
@@ -46,7 +46,7 @@ npm run dev
 
 默认访问地址：
 
-- 前端页面：`http://localhost:3000`
+- 前端页面：`http://localhost:9000`
 
 ## 当前已联调页面
 

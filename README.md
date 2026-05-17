@@ -1,100 +1,230 @@
 # 飞行者图鉴
 
-面向黑客松赛题三的航空科普知识平台 Demo，目标是把分散、专业、难比较的航空知识整理成一个可搜索、可对比、可继续探索、可后台运营的“活的知识中枢”。
+面向“赛题三：飞行者图鉴”打造的航空科普知识平台 Demo，围绕航空器、航空事件、航空人物三类内容，提供前台浏览搜索、多机型对比，以及后台录入校验与审核演示能力。
 
-当前仓库包含 3 类核心资产：
+## 目录
 
-- 一个可本地运行的 Node.js 后端服务
-- 一套可直接演示的前端高保真静态原型
-- 一批围绕赛题需求整理的产品、架构与智能体文档
+- [项目概览](#项目概览)
+- [仓库包含什么](#仓库包含什么)
+- [赛题覆盖情况](#赛题覆盖情况)
+- [已实现能力](#已实现能力)
+- [技术栈](#技术栈)
+- [快速开始](#快速开始)
+- [演示账号与数据](#演示账号与数据)
+- [推荐演示路线](#推荐演示路线)
+- [目录结构](#目录结构)
+- [关键页面与接口](#关键页面与接口)
+- [文档资产](#文档资产)
+- [当前边界](#当前边界)
+- [后续建议](#后续建议)
+- [License](#license)
 
-## 项目定位
+## 项目概览
 
-这个项目对应 [赛题三：飞行者图鉴 —— 开放型航空科普知识平台](./title.md)。
+`飞行者图鉴` 不是单一的信息展示页，而是一个围绕航空科普场景设计的完整 Demo：
 
-平台希望解决 3 个问题：
+- 前台面向普通用户，强调“看得懂、搜得到、能比较”
+- 后台面向运营和评审演示，强调“可录入、可校验、可审核”
+- 数据层同时支持本地 JSON 和 MySQL，便于快速演示与后续扩展
+- 仓库内保留了产品文档、技术架构稿、原型稿和实现代码，适合继续打磨成正式参赛作品
 
-- 航空器、事件、人物资料分散，搜索和整理成本高
-- 不同飞行器很难在统一维度下横向比较
-- 后台录入内容时，字段缺失、来源不清、单位不统一等问题容易影响展示质量
+这个仓库当前最适合用于三类场景：
 
-面向用户主要分为两类：
+- 黑客松现场演示
+- 课程作业或比赛答辩材料整理
+- 后续继续扩展成完整航空知识平台
 
-- 前台用户：浏览、搜索、对比、收藏、继续学习
-- 后台运营 / 管理员：录入内容、执行校验、提审、审核、查看日志
+## 仓库包含什么
 
-## 当前状态
+本项目由三个核心部分组成：
 
-这个仓库目前不是“完整成型的一体化 Web 应用”，而是一个适合比赛演示的阶段性版本：
+| 模块 | 位置 | 作用 |
+| --- | --- | --- |
+| 联调前端 | `frontend-design/web` | 基于 Next.js 的真实可运行 Web Demo，展示前台与后台主要流程 |
+| 后端服务 | `backend` | 基于 Express 的本地 API 服务，负责公开内容、用户能力和后台管理接口 |
+| 设计与文档资产 | `frontend-design/prototype`、`.trae/documents` | 保留原型、PRD、技术架构、竞赛规则等资料 |
 
-- `backend/` 已提供可运行 REST API，本地 JSON 持久化，支持公开浏览、用户体系、后台校验和航空器审核流
-- `frontend-design/prototype/` 是静态高保真原型，已经接入部分本地后端接口，用于展示搜索、后台校验和提审流程
-- `.trae/documents/` 与 `.trae/specs/` 保存了产品、架构和治理方案，适合作为后续正式开发的依据
-- 智能助手目前以提示词与展示原型为主，仓库里还没有独立的 LLM 服务接入实现
+## 赛题覆盖情况
 
-如果你要向评委展示，这个仓库已经足够支撑“前台体验 + 后台内容管理 + 智能化方向”的整体叙事。如果你要继续开发成正式产品，还需要补齐真实前端工程、更多实体 CRUD、数据库迁移与 AI 服务落地。
+下面按赛题三的基础要求整理当前仓库的覆盖状态：
+
+| 赛题要求 | 当前状态 | 说明 |
+| --- | --- | --- |
+| 浏览航空器、事件、人物 | 已覆盖 | 首页、搜索页、事件列表、人物列表、航空器详情已可演示 |
+| 搜索三类内容 | 已覆盖 | 支持航空器、事件、人物混合搜索，也可按实体类型筛选 |
+| 航空器横向对比 | 已覆盖 | 支持尺寸、速度、航程、发动机类型、首飞年份等核心维度 |
+| 面向非专业用户的结构化展示 | 已覆盖 | 页面文案偏科普表达，重点参数集中展示 |
+| 后台新增、编辑、删除内容 | 部分覆盖 | 已支持航空器新增、更新、校验、提审、审核；删除入口暂未提供 |
+| 上传图片及关键参数 | 已覆盖 | 后台支持图片上传和结构化字段录入 |
+| 字段完整性校验 | 已覆盖 | 后台支持阻塞项与建议项校验 |
+
+如果用于答辩，建议主动说明“后台内容治理闭环已完成航空器主链路，事件与人物后台管理仍可继续补齐”。
 
 ## 已实现能力
 
-### 1. 公开内容能力
+### 前台能力
 
-- 航空器列表查询与关键词过滤
-- 航空器详情查询
-- 多机型参数对比
-- 事件列表、人物列表
-- 混合搜索：航空器 / 事件 / 人物
-- 简单相关推荐
+- 首页聚合展示平台亮点、后端健康状态、精选航空器、事件、人物
+- 全站搜索支持航空器、事件、人物混合检索
+- 航空器详情页支持核心参数、相关推荐、相关事件、相关人物展示
+- 对比页支持多架飞机横向对比，并可切换“仅看差异”
+- 事件页与人物页已提供基础列表浏览
+- 前台用户支持注册、登录、登录态恢复、收藏、浏览历史
 
-### 2. 前台用户能力
+### 后台能力
 
-- 用户注册、登录、刷新令牌、退出登录
-- 个人资料读取
-- 收藏新增 / 删除 / 列表
-- 浏览历史写入 / 查询
+- 管理员账号登录
+- 仪表盘摘要统计
+- 航空器字段校验
+- 航空器新建与更新
+- 提交审核、审核通过、审核驳回
+- 审核队列查看
+- 审计日志查看
+- 图片上传
 
-### 3. 后台运营能力
+### 数据与存储
 
-- 管理员登录
-- 仪表盘摘要数据
-- 航空器内容校验
-- 新建航空器
-- 更新航空器
-- 提交审核
-- 审核通过 / 驳回
-- 审计日志查询
-- 媒体上传
+- 默认不配置数据库时，可直接使用本地 JSON 数据启动
+- 已接入 Prisma，可切换到 MySQL
+- JSON 模式首次启动时会自动生成演示种子数据
+- 默认种子数据包含 3 架航空器、1 条事件、1 位人物和 2 个演示账号
 
-### 4. 原型演示能力
+## 技术栈
 
-静态原型当前覆盖以下页面或场景：
+### 前端
 
-- 首页导览
-- 搜索探索
-- 飞行器详情
-- 多机型对比
-- 事件与人物联动页
-- 智能助手抽屉
-- 后台管理与质量校验面板
+- `Next.js 16`
+- `React 19`
+- `TypeScript`
+- `Tailwind CSS 4`
+- `Zustand`
+- `ESLint`
+- `Vitest`
 
-其中已经和后端发生真实联调的交互包括：
+### 后端
 
-- 搜索接口调用
-- 管理员自动登录
-- 后台摘要数据加载
-- 表单字段校验
-- 新建航空器并提交审核
+- `Node.js`
+- `Express`
+- `Prisma`
+- `MySQL`
+- `multer`
+- `cors`
 
-## 还未完成或仍属规划的部分
+### 包管理与工程化
 
-为了避免误解，这里把当前缺口单独列出来：
+- 包管理器：`npm`
+- 前后端均已包含 `package-lock.json`
 
-- 还没有正式的前端工程项目，当前前台主要是静态原型，不是 `Next.js` 成品
-- 事件、人物的后台 CRUD 还没有落地
-- 还没有航空器删除接口
-- 事件详情、人物详情接口尚未补齐
-- 智能助手还没有真实接入大模型 API
-- 当前数据存储仍是本地 JSON 文件，不适合并发和生产环境
-- 权限、审计、上传、安全策略仍是 Demo 级实现
+## 快速开始
+
+### 环境要求
+
+- `Node.js 18+`，推荐 `Node.js 20 LTS`
+- `npm`
+
+### 1. 启动后端
+
+后端默认端口为 `9001`。如果没有设置数据库环境变量，服务会以本地 JSON 模式运行。
+
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+启动成功后可访问：
+
+- API 根地址：`http://localhost:9001`
+- 健康检查：`http://localhost:9001/health`
+
+### 2. 启动前端
+
+前端默认端口为 `9000`，通过 Next.js rewrite 将 `/api-bridge/*` 转发到后端服务。
+
+```bash
+cd frontend-design/web
+npm install
+npm run dev
+```
+
+启动成功后访问：
+
+- Web 页面：`http://localhost:9000`
+
+### 3. 可选：切换到 MySQL
+
+后端已经提供 Prisma Schema 和 MySQL 迁移脚本。需要 MySQL 时，可以按下面的顺序配置：
+
+1. 将 `backend/.env.example` 复制为 `backend/.env`
+2. 修改 `.env` 中的 `DATABASE_URL`
+3. 将 `DATABASE_PROVIDER` 设为 `mysql`
+4. 执行以下命令
+
+```bash
+cd backend
+npm run db:generate
+npm run db:push
+```
+
+如果要把现有 JSON 演示数据导入 MySQL，可继续执行：
+
+```bash
+cd backend
+npm run db:seed:mysql
+```
+
+### 4. 可选：显式配置前端环境变量
+
+本地联调通常不需要额外配置，因为前端已经内置默认值：
+
+- `NEXT_PUBLIC_API_BASE=/api-bridge`
+- `API_SERVER_URL=http://localhost:9001`
+
+如果你希望手动指定，可新建 `frontend-design/web/.env.local`：
+
+```env
+NEXT_PUBLIC_API_BASE=/api-bridge
+API_SERVER_URL=http://localhost:9001
+```
+
+### 5. 可选：查看静态原型
+
+如果你想展示更偏视觉方案的原型稿，而不是联调版页面，可以单独启动静态文件服务：
+
+```bash
+python -m http.server 4173
+```
+
+然后访问：
+
+- `http://localhost:4173/frontend-design/prototype/`
+
+## 演示账号与数据
+
+本地种子数据内置了两个账号：
+
+| 角色 | 账号 | 密码 |
+| --- | --- | --- |
+| 管理员 | `admin` | `Admin123!` |
+| 前台用户 | `demo` | `Demo123!` |
+
+适合演示的数据内容包括：
+
+- 航空器：空客 A380、波音 747、协和式
+- 事件：喷气时代来临
+- 人物：乔·萨特
+
+## 推荐演示路线
+
+如果你要做比赛答辩，推荐按下面顺序演示：
+
+1. 打开首页，确认后端健康状态为 `ok`
+2. 进入 `/search`，演示三类实体混合搜索
+3. 打开任意航空器详情页，展示结构化参数、相关事件、相关人物和相关推荐
+4. 进入 `/compare`，展示多机型横向对比和“仅看差异”
+5. 使用普通用户登录，演示收藏和浏览历史
+6. 使用管理员登录，演示字段校验、创建条目、提审、审核和审计日志
+7. 最后补充静态原型或产品文档，说明项目可继续扩展的方向
 
 ## 目录结构
 
@@ -103,276 +233,100 @@ Hackathon/
 ├─ README.md
 ├─ title.md
 ├─ backend/
-│  ├─ data/
-│  │  └─ db.json
+│  ├─ data/                     # 本地 JSON 数据
+│  ├─ prisma/                   # Prisma Schema
 │  ├─ src/
-│  │  ├─ auth.js
-│  │  ├─ db.js
-│  │  ├─ seed.js
-│  │  ├─ server.js
-│  │  └─ validation.js
+│  │  ├─ server.js              # API 入口
+│  │  ├─ db.js                  # JSON / MySQL 存储切换
+│  │  ├─ seed.js                # 演示种子数据
+│  │  ├─ validation.js          # 航空器字段校验
+│  │  └─ scripts/
+│  │     └─ migrate-json-to-mysql.js
+│  ├─ .env.example
 │  ├─ DEPLOY.md
-│  ├─ package.json
-│  └─ package-lock.json
+│  ├─ README.md
+│  └─ package.json
 ├─ frontend-design/
-│  ├─ frontend-design-package.md
-│  └─ prototype/
-│     ├─ index.html
-│     ├─ script.js
-│     └─ styles.css
+│  ├─ prototype/                # 静态高保真原型
+│  ├─ web/                      # Next.js 联调前端
+│  │  ├─ app/                   # App Router 页面
+│  │  ├─ public/
+│  │  ├─ src/
+│  │  │  ├─ components/
+│  │  │  ├─ lib/
+│  │  │  ├─ store/
+│  │  │  └─ types/
+│  │  ├─ README.md
+│  │  └─ package.json
+│  └─ frontend-design-package.md
 └─ .trae/
-   ├─ agents/
-   ├─ documents/
-   ├─ rules/
-   └─ specs/
+   ├─ agents/                   # 智能导览助手提示资产
+   ├─ documents/                # PRD 与技术架构稿
+   ├─ rules/                    # 竞赛规则
+   └─ specs/                    # 任务与规范沉淀
 ```
 
-## 技术栈
-
-### 当前实际落地
-
-- 后端：Node.js + Express
-- 中间件：`cors`、`multer`
-- 认证方式：基于随机 Token 的会话机制
-- 数据存储：本地 JSON 文件
-- 前端演示：原生 HTML + CSS + JavaScript 静态原型
-
-### 文档中的后续目标方案
-
-以下内容来自当前设计文档，属于推荐落地方向，不代表仓库里已经实现：
-
-- 前端：Next.js 15 + React 19 + TypeScript
-- 样式：Tailwind CSS + CSS Variables
-- 状态管理：TanStack Query + Zustand
-- 表单：React Hook Form + Zod
-- 测试：Vitest + Playwright + axe-core
-- 生产数据层：PostgreSQL / Redis / 对象存储
-
-## 快速开始
-
-### 环境要求
-
-- Node.js 18 及以上，推荐 Node.js 20 LTS
-- npm
-- 任意静态文件服务器，用于打开原型页面
-
-### 1. 启动后端
-
-```bash
-cd backend
-npm install
-npm run dev
-```
-
-默认地址：
-
-- API：`http://localhost:3001`
-- 健康检查：`http://localhost:3001/health`
-
-### 2. 启动前端原型
-
-在项目根目录任选一种静态服务方式即可。示例：
-
-```bash
-python -m http.server 4173
-```
-
-打开：
-
-- 原型页：`http://localhost:4173/frontend-design/prototype/`
-
-原型脚本默认请求：
-
-- `http://localhost:3001`
-
-所以需要同时启动后端和静态文件服务。
-
-## 演示账号
-
-默认演示账号由种子数据生成：
-
-- 管理员：`admin / Admin123!`
-- 前台用户：`demo / Demo123!`
-
-说明：
-
-- 原型中的后台联调会自动使用管理员账号登录
-- 如果你删除 `backend/data/db.json` 后重启服务，系统会自动重新生成一份种子数据
-
-## 数据与持久化说明
-
-当前后端为了快速演示，采用本地文件持久化：
-
-- 数据文件：`backend/data/db.json`
-- 上传目录：`backend/uploads/`
-
-这意味着：
-
-- 启动成本低，适合黑客松现场演示
-- 数据结构清晰，便于快速调试
-- 但不适合多用户并发、复杂查询和生产环境部署
-
-## 核心接口概览
-
-### 公开接口
-
-| 方法 | 路径 | 用途 |
-| --- | --- | --- |
-| `GET` | `/health` | 健康检查 |
-| `GET` | `/api/public/aircraft` | 航空器列表 |
-| `POST` | `/api/public/aircraft/compare` | 多机型对比 |
-| `GET` | `/api/public/aircraft/:id` | 航空器详情 |
-| `GET` | `/api/public/events` | 事件列表 |
-| `GET` | `/api/public/persons` | 人物列表 |
-| `GET` | `/api/public/search` | 混合搜索 |
-| `GET` | `/api/public/recommendations` | 相关推荐 |
-
-### 前台用户接口
-
-| 方法 | 路径 | 用途 |
-| --- | --- | --- |
-| `POST` | `/api/user/auth/register` | 注册 |
-| `POST` | `/api/user/auth/login` | 登录 |
-| `POST` | `/api/user/auth/refresh` | 刷新令牌 |
-| `POST` | `/api/user/auth/logout` | 退出登录 |
-| `GET` | `/api/user/profile` | 当前用户信息 |
-| `POST` | `/api/user/favorites` | 新增收藏 |
-| `DELETE` | `/api/user/favorites/:id` | 删除收藏 |
-| `GET` | `/api/user/favorites` | 收藏列表 |
-| `POST` | `/api/user/history` | 写入浏览历史 |
-| `GET` | `/api/user/history` | 浏览历史列表 |
-
-### 后台接口
-
-| 方法 | 路径 | 用途 |
-| --- | --- | --- |
-| `POST` | `/api/admin/auth/login` | 管理员登录 |
-| `GET` | `/api/admin/dashboard/summary` | 仪表盘摘要 |
-| `POST` | `/api/admin/content/validate` | 内容校验 |
-| `POST` | `/api/admin/aircraft` | 新建航空器 |
-| `PUT` | `/api/admin/aircraft/:id` | 更新航空器 |
-| `POST` | `/api/admin/content/submit-review` | 提交审核 |
-| `POST` | `/api/admin/content/approve` | 审核通过 |
-| `POST` | `/api/admin/content/reject` | 审核驳回 |
-| `GET` | `/api/admin/audit-logs` | 审计日志 |
-| `POST` | `/api/admin/media/upload` | 媒体上传 |
-
-## 一个最小联调流程
-
-### 1. 搜索内容
-
-在原型页顶部搜索框输入关键词，例如：
-
-- `喷气时代最有代表性的客机`
-- `波音`
-- `乔·萨特`
-
-点击“自然语言搜索”后，原型会调用 `/api/public/search` 并刷新结果区。
-
-### 2. 执行后台校验
-
-进入“后台管理”页后，点击“执行字段校验”，原型会调用：
-
-- `/api/admin/auth/login`
-- `/api/admin/content/validate`
-
-如果缺少航程、来源等字段，右侧会显示告警。
-
-### 3. 提交审核
-
-在后台表单补充来源后点击“提交审核”，原型会依次调用：
-
-- `/api/admin/aircraft`
-- `/api/admin/content/submit-review`
-- `/api/admin/dashboard/summary`
-
-这个流程可以完整展示“录入 -> 校验 -> 提审 -> 摘要刷新”的闭环。
-
-## 示例请求
-
-### 搜索
-
-```bash
-curl "http://localhost:3001/api/public/search?q=A380"
-```
-
-### 管理员登录
-
-```bash
-curl -X POST "http://localhost:3001/api/admin/auth/login" \
-  -H "Content-Type: application/json" \
-  -d "{\"username\":\"admin\",\"password\":\"Admin123!\"}"
-```
-
-### 航空器内容校验
-
-```bash
-curl -X POST "http://localhost:3001/api/admin/content/validate" \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer <accessToken>" \
-  -d "{\"nameZh\":\"波音 747\",\"aircraftType\":\"客机\",\"summary\":\"经典巨型远程客机\",\"rangeKm\":0,\"source\":\"\"}"
-```
-
-## 数据模型概览
-
-当前种子数据至少包含以下实体：
-
-- `aircraft`
-- `events`
-- `persons`
-- `users`
-- `sessions`
-- `favorites`
-- `browsingHistory`
-- `approvalWorkflows`
-- `approvalTasks`
-- `reviewComments`
-- `auditLogs`
-- `contentRevisions`
-
-默认种子样例包括：
-
-- 航空器：空客 A380、波音 747、协和式
-- 事件：喷气时代来临
-- 人物：乔·萨特
-
-## 智能体与文档资产
-
-仓库中已经整理了一批对后续开发很有用的资料：
-
-- 智能体说明：`./.trae/agents/flight-encyclopedia-agent.md`
-- 前端 PRD：`./.trae/documents/飞行者图鉴-前端PRD.md`
-- 前端技术架构：`./.trae/documents/飞行者图鉴-前端技术架构.md`
-- 前端设计执行包：`./frontend-design/frontend-design-package.md`
-- 后端部署说明：`./backend/DEPLOY.md`
-- 赛题规则：`./.trae/rules/hackathon.md`
-
-如果你想继续把项目做完整，建议优先阅读这些文档，再开始正式前端工程搭建和 AI 服务接入。
-
-## 推荐开发顺序
-
-如果接下来要继续推进，我建议按这个顺序走：
-
-1. 搭建真实前端工程，把原型页面迁移到 `Next.js`
-2. 补齐事件、人物详情与后台 CRUD
-3. 将本地 JSON 存储迁移到 PostgreSQL
-4. 接入真正的智能问答接口
-5. 增加更完整的测试、权限控制和部署脚本
-
-## 风险与注意事项
-
-- `backend/data/db.json` 是可变演示数据，提交前注意不要把临时脏数据当成正式内容
-- 当前 Token 和会话机制是 Demo 方案，不适合直接上线
-- 上传文件当前保存在本地目录，生产环境建议迁移到对象存储
-- 原型展示里部分内容是静态示例，不能等同于全部功能都已实现
-
-## 适合答辩时强调的亮点
-
-- 不只是“航空百科”，而是把搜索、对比、导览、后台运营串成了完整闭环
-- 兼顾了前台用户体验和后台内容治理
-- 对“非专业用户可理解”做了明显优化，适合科普场景
-- 已经预留智能助手、时间线、知识图谱等扩展方向
+## 关键页面与接口
+
+### 当前前端页面
+
+| 路由 | 说明 |
+| --- | --- |
+| `/` | 首页总览 |
+| `/search` | 全站搜索 |
+| `/compare` | 航空器对比页 |
+| `/aircraft/[slug]` | 航空器详情页 |
+| `/events` | 航空事件列表页 |
+| `/persons` | 航空人物列表页 |
+| `/user/login` | 前台用户登录与注册 |
+| `/me` | 个人中心 |
+| `/admin/login` | 管理员登录 |
+| `/admin/dashboard` | 后台联调与管理演示页 |
+
+### 当前后端接口分类
+
+- 公开接口：航空器、事件、人物、搜索、推荐、对比
+- 前台用户接口：注册、登录、刷新令牌、退出、收藏、浏览历史
+- 后台管理接口：登录、摘要、航空器管理、审核流、审计日志、媒体上传
+
+详细接口说明请查看：
+
+- `backend/README.md`
+- `frontend-design/web/README.md`
+
+## 文档资产
+
+仓库内已经包含多份可直接用于继续开发或整理答辩材料的文档：
+
+- `backend/README.md`：后端接口和本地运行说明
+- `backend/DEPLOY.md`：后端部署说明
+- `frontend-design/web/README.md`：前端联调说明
+- `frontend-design/frontend-design-package.md`：前端设计执行包
+- `.trae/documents/飞行者图鉴-前端PRD.md`：产品需求稿
+- `.trae/documents/飞行者图鉴-前端技术架构.md`：前端技术架构稿
+- `.trae/rules/hackathon.md`：赛题规则原文
+
+## 当前边界
+
+为了避免把当前 Demo 误解为完整生产系统，建议在答辩或交接时明确说明以下边界：
+
+- 后台主流程目前重点覆盖航空器，事件与人物的后台管理链路仍待补齐
+- 前端已提供事件和人物列表页，但独立详情页暂未落地
+- 后端已经提供事件详情、人物详情接口，前端还没有完全接上这部分页面
+- 审核、上传、审计和鉴权流程可演示，但仍属于 Demo 级实现
+- 默认本地存储为 JSON，适合联调和展示，不适合直接用于生产环境
+- 当前仓库未集成真实的大模型问答服务，智能导览更多体现在产品方向和提示资产层
+- 仓库当前没有自动化测试用例，`Vitest` 已接入但测试文件尚未补充
+
+## 后续建议
+
+- 补齐事件与人物详情页，以及后台内容管理页面
+- 将搜索结果中的事件与人物卡片接到真实详情页
+- 增加删除能力、权限边界控制和更完整的运营流程
+- 将演示数据迁移到 MySQL，减少 JSON 模式带来的限制
+- 为关键 API 和页面补充自动化测试
+- 接入真正的智能问答、相关推荐和知识导览能力
 
 ## License
 
-当前仓库未提供单独的许可证文件。如需开源或分发，建议后续补充 `LICENSE`。
+当前仓库未提供单独的 `LICENSE` 文件。如需开源、分发或提交正式成果，建议补充许可证说明。

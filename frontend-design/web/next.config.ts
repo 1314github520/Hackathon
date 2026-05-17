@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    const target = process.env.API_SERVER_URL || "http://localhost:3001";
+    const target = process.env.API_SERVER_URL || "http://localhost:9001";
 
     return [
       {

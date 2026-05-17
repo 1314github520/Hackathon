@@ -7,7 +7,7 @@ const { createSession, isExpired, verifyPassword } = require("./auth");
 const { ensureStorage, readDb, uploadsDir, withDb } = require("./db");
 const { validateAircraftPayload } = require("./validation");
 
-const PORT = Number(process.env.PORT || 3001);
+const PORT = Number(process.env.PORT || 9001);
 const app = express();
 const allowedOrigins = String(process.env.CORS_ALLOWED_ORIGINS || "")
   .split(",")

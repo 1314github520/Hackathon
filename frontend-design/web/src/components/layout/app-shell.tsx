@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -22,9 +23,17 @@ type AppShellProps = {
 
 export function AppShell({ title, subtitle, actions, children }: AppShellProps) {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const activeLabel = useMemo(
+    () => navItems.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`))?.label || "首页",
+    [pathname],
+  );
 
   return (
     <div className="page-shell">
+      <a href="#main-content" className="skip-link">
+        跳到主要内容
+      </a>
       <div className="page-grid">
         <header className="site-header">
           <div className="site-brand">
@@ -36,7 +45,18 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
                 <p className="meta">航空器 · 大事件 · 航空人物 · 后台管理</p>
               </div>
             </div>
-            <span className="code-chip">航空科普 Demo</span>
+            <div className="site-brand-tools">
+              <span className="code-chip">航空科普 Demo</span>
+              <button
+                type="button"
+                className="nav-toggle"
+                aria-expanded={menuOpen}
+                aria-controls="site-nav"
+                onClick={() => setMenuOpen((value) => !value)}
+              >
+                菜单
+              </button>
+            </div>
           </div>
 
           <div className="site-header-grid">
@@ -44,12 +64,14 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
               <span className="site-kicker">开放型航空知识平台</span>
               <h1>{title}</h1>
               <p>{subtitle}</p>
-              <nav className="site-nav">
+              <nav id="site-nav" className={`site-nav ${menuOpen ? "open" : ""}`} aria-label="主导航">
                 {navItems.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={pathname === item.href ? "active" : ""}
+                    className={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "active" : ""}
+                    aria-current={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "page" : undefined}
+                    onClick={() => setMenuOpen(false)}
                   >
                     {item.label}
                   </Link>
@@ -66,14 +88,16 @@ export function AppShell({ title, subtitle, actions, children }: AppShellProps) 
               </div>
               <div className="hero-note">
                 <div className="label">当前版本</div>
-                <div className="value">前后端已联调</div>
-                <div className="desc">可直接进行搜索、详情浏览、对比、收藏和后台审核演示。</div>
+                <div className="value">{activeLabel}模块</div>
+                <div className="desc">支持响应式浏览、状态反馈、错误处理和联调演示路径。</div>
               </div>
             </div>
           </div>
         </header>
 
-        <main className="space-y-4">{children}</main>
+        <main id="main-content" className="main-stack">
+          {children}
+        </main>
       </div>
     </div>
   );

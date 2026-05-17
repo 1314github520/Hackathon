@@ -10,7 +10,7 @@
       "email": "admin@flyer.local",
       "phone": "",
       "avatarUrl": "",
-      "lastLoginAt": "2026-05-17T08:24:10.856Z",
+      "lastLoginAt": "2026-05-17T09:34:07.864Z",
       "createdAt": "2026-05-17T06:41:57.473Z",
       "updatedAt": "2026-05-17T06:41:57.473Z"
     },
@@ -24,7 +24,7 @@
       "email": "demo@flyer.local",
       "phone": "",
       "avatarUrl": "",
-      "lastLoginAt": "2026-05-17T08:14:51.598Z",
+      "lastLoginAt": "2026-05-17T09:34:07.932Z",
       "createdAt": "2026-05-17T06:41:57.473Z",
       "updatedAt": "2026-05-17T06:41:57.473Z"
     }
@@ -138,6 +138,28 @@
       "createdAt": "2026-05-17T08:24:10.856Z",
       "expiresAt": "2026-05-17T09:24:10.856Z",
       "refreshExpiresAt": "2026-05-24T08:24:10.856Z",
+      "revokedAt": null
+    },
+    {
+      "id": "a2bf1377-2019-4307-b212-96a7d8540fe1",
+      "userId": "user-admin",
+      "userType": "admin_user",
+      "accessToken": "febb86559fefe0ec0fed3db5328a8ea419481b2d6e75226e",
+      "refreshToken": "011a5df1348e0762eb4134ba0b03eab7451b76e7b6d01b82",
+      "createdAt": "2026-05-17T09:34:07.863Z",
+      "expiresAt": "2026-05-17T10:34:07.863Z",
+      "refreshExpiresAt": "2026-05-24T09:34:07.863Z",
+      "revokedAt": null
+    },
+    {
+      "id": "0c622bac-38eb-4cd1-8796-fb905fa7c994",
+      "userId": "user-demo",
+      "userType": "frontend_user",
+      "accessToken": "c5c72987d9fcab29e0dd7043bbb0e3b9eb8d5e91dc5a4825",
+      "refreshToken": "5f97207f6c32138f9cbec86314150f53d2b9ed4670d43624",
+      "createdAt": "2026-05-17T09:34:07.932Z",
+      "expiresAt": "2026-05-17T10:34:07.932Z",
+      "refreshExpiresAt": "2026-05-24T09:34:07.932Z",
       "revokedAt": null
     }
   ],
@@ -352,6 +374,16 @@
   ],
   "reviewComments": [],
   "auditLogs": [
+    {
+      "id": "5f282def-7ef6-4ef6-83bc-62b95000b173",
+      "createdAt": "2026-05-17T09:34:07.864Z",
+      "operatorId": "user-admin",
+      "operatorName": "admin",
+      "action": "admin_login",
+      "entityType": "auth",
+      "entityId": "user-admin",
+      "summary": "管理员登录成功"
+    },
     {
       "id": "83057b57-448f-4379-a856-624dd46396d0",
       "createdAt": "2026-05-17T08:24:10.856Z",

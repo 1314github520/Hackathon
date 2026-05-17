@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { AppShell } from "@/components/layout/app-shell";
 import { CoverImage } from "@/components/ui/cover-image";
+import { EmptyState, LoadingState, Notice } from "@/components/ui/feedback";
 import { Badge, Panel, StatCard } from "@/components/ui/panel";
 import { demoAircraftPayload } from "@/data/demo";
 import { api } from "@/lib/api/service";
@@ -24,6 +25,26 @@ const initialFormState: AircraftFormState = {
   ...demoAircraftPayload,
 };
 
+const formFieldMeta: Array<{
+  key: keyof typeof demoAircraftPayload | "description" | "source";
+  label: string;
+  type?: "text" | "number" | "textarea";
+  placeholder?: string;
+  hint?: string;
+}> = [
+  { key: "nameZh", label: "中文名称", placeholder: "例如：波音 777X Demo" },
+  { key: "aircraftType", label: "机型分类", placeholder: "例如：客机" },
+  { key: "summary", label: "一句话简介", type: "textarea", hint: "用于列表卡片和搜索结果的简短说明。" },
+  { key: "description", label: "详细介绍", type: "textarea", hint: "建议写清定位、特点和科普解释。" },
+  { key: "manufacturer", label: "制造方", placeholder: "例如：波音" },
+  { key: "countryOfOrigin", label: "所属国家", placeholder: "例如：美国" },
+  { key: "eraLabel", label: "时代标签", placeholder: "例如：现代航空" },
+  { key: "firstFlightYear", label: "首飞年份", type: "number" },
+  { key: "rangeKm", label: "航程（km）", type: "number" },
+  { key: "engineType", label: "发动机类型", placeholder: "例如：涡扇" },
+  { key: "source", label: "资料来源", placeholder: "例如：官方资料或可靠来源" },
+];
+
 export default function AdminDashboardPage() {
   const [session, setSession] = useState(readStoredSession("admin"));
   const token = useMemo(() => session?.accessToken || null, [session]);
@@ -36,6 +57,8 @@ export default function AdminDashboardPage() {
   const [adminAircraft, setAdminAircraft] = useState<AdminAircraftItem[]>([]);
   const [reviewQueue, setReviewQueue] = useState<ReviewQueueItem[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [actionState, setActionState] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [form, setForm] = useState<AircraftFormState>(initialFormState);
@@ -113,16 +136,21 @@ export default function AdminDashboardPage() {
       return;
     }
 
-    const [summaryResult, logsResult, aircraftResult, reviewQueueResult] = await Promise.all([
-      api.adminSummary(token),
-      api.auditLogs(token),
-      api.adminAircraft(token),
-      api.reviewQueue(token),
-    ]);
-    setSummary(summaryResult);
-    setAuditLogs(logsResult);
-    setAdminAircraft(aircraftResult);
-    setReviewQueue(reviewQueueResult);
+    try {
+      setLoadingDashboard(true);
+      const [summaryResult, logsResult, aircraftResult, reviewQueueResult] = await Promise.all([
+        api.adminSummary(token),
+        api.auditLogs(token),
+        api.adminAircraft(token),
+        api.reviewQueue(token),
+      ]);
+      setSummary(summaryResult);
+      setAuditLogs(logsResult);
+      setAdminAircraft(aircraftResult);
+      setReviewQueue(reviewQueueResult);
+    } finally {
+      setLoadingDashboard(false);
+    }
   }
 
   function onFieldChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
@@ -159,6 +187,7 @@ export default function AdminDashboardPage() {
     }
 
     try {
+      setActionState("图片上传中");
       setUploading(true);
       setError("");
       const result = await api.uploadMedia(token, file);
@@ -170,6 +199,7 @@ export default function AdminDashboardPage() {
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "图片上传失败");
     } finally {
+      setActionState("");
       setUploading(false);
       event.target.value = "";
     }
@@ -182,6 +212,7 @@ export default function AdminDashboardPage() {
     }
 
     try {
+      setActionState("字段校验中");
       setError("");
       const result = await api.validateAircraft(token, { ...form, requirePublishReady: false });
       setValidation(result);
@@ -194,6 +225,8 @@ export default function AdminDashboardPage() {
         return;
       }
       setError(validateError instanceof Error ? validateError.message : "校验失败");
+    } finally {
+      setActionState("");
     }
   }
 
@@ -204,6 +237,7 @@ export default function AdminDashboardPage() {
     }
 
     try {
+      setActionState("创建航空器中");
       setError("");
       const result = await api.createAircraft(token, form);
       setCreatedAircraft(result);
@@ -217,6 +251,8 @@ export default function AdminDashboardPage() {
         return;
       }
       setError(createError instanceof Error ? createError.message : "创建航空器失败");
+    } finally {
+      setActionState("");
     }
   }
 
@@ -227,6 +263,7 @@ export default function AdminDashboardPage() {
     }
 
     try {
+      setActionState("更新航空器中");
       setError("");
       const result = await api.updateAircraft(token, createdAircraft.id, form);
       setCreatedAircraft(result);
@@ -240,6 +277,8 @@ export default function AdminDashboardPage() {
         return;
       }
       setError(updateError instanceof Error ? updateError.message : "更新航空器失败");
+    } finally {
+      setActionState("");
     }
   }
 
@@ -250,6 +289,7 @@ export default function AdminDashboardPage() {
     }
 
     try {
+      setActionState("提交审核中");
       setError("");
       const result = await api.submitReview(token, "aircraft", createdAircraft.id);
       const nextWorkflowId = String((result.workflow as { id?: string })?.id || "");
@@ -264,6 +304,8 @@ export default function AdminDashboardPage() {
         return;
       }
       setError(reviewError instanceof Error ? reviewError.message : "提审失败");
+    } finally {
+      setActionState("");
     }
   }
 
@@ -274,6 +316,7 @@ export default function AdminDashboardPage() {
     }
 
     try {
+      setActionState(decision === "approve" ? "审核通过处理中" : "审核驳回处理中");
       setError("");
       if (decision === "approve") {
         await api.approveReview(token, workflowId, "联调验证通过");
@@ -291,6 +334,8 @@ export default function AdminDashboardPage() {
         return;
       }
       setError(decisionError instanceof Error ? decisionError.message : "审核操作失败");
+    } finally {
+      setActionState("");
     }
   }
 
@@ -302,10 +347,15 @@ export default function AdminDashboardPage() {
     return (
       <AppShell title="后台联调" subtitle="需要管理员登录后才能调用后台摘要、校验、创建和审核接口。">
         <Panel title="未登录" kicker="管理员鉴权">
-          <p className="text-sm text-[var(--muted)]">请先进入管理员登录页，获取 accessToken 后再继续联调。</p>
-          <Link href="/admin/login" className="action-button mt-4">
-            去管理员登录
-          </Link>
+          <EmptyState
+            title="请先登录管理员账号"
+            description="登录后才能访问摘要统计、内容校验、媒体上传和审核队列。"
+            actions={
+              <Link href="/admin/login" className="action-button">
+                去管理员登录
+              </Link>
+            }
+          />
         </Panel>
       </AppShell>
     );
@@ -317,8 +367,20 @@ export default function AdminDashboardPage() {
       subtitle="面向内容录入和审核演示的后台页面，突出字段校验、创建条目和审核流程。"
       actions={workflowId ? <Badge>{workflowId}</Badge> : null}
     >
-      {message ? <p className="status-success">{message}</p> : null}
-      {error ? <p className="status-error">{error}</p> : null}
+      {message ? <Notice tone="success">{message}</Notice> : null}
+      {error ? (
+        <Notice
+          tone="error"
+          actions={
+            <button type="button" className="ghost-button" onClick={() => void refreshDashboardData()}>
+              重新加载
+            </button>
+          }
+        >
+          {error}
+        </Notice>
+      ) : null}
+      {actionState ? <LoadingState label={actionState} description="请稍候，后台操作正在执行。" compact /> : null}
       {summary ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatCard label="已发布条目" value={String(summary.publishedCount)} />
@@ -327,9 +389,23 @@ export default function AdminDashboardPage() {
           <StatCard label="本周修复率" value={summary.weeklyFixRate} tone="success" />
         </div>
       ) : null}
+      {loadingDashboard ? <LoadingState label="正在同步后台概览" description="系统正在加载摘要、内容库、审核队列和审计日志。" compact /> : null}
 
       <div className="two-column">
-        <Panel title="航空器表单联调" kicker="校验 + 创建 + 提审">
+        <Panel
+          title="航空器表单联调"
+          kicker="校验 + 创建 + 提审"
+          rightSlot={
+            <div className="dashboard-actions">
+              <button type="button" className="ghost-button" onClick={() => setForm(initialFormState)}>
+                恢复演示数据
+              </button>
+              <button type="button" className="ghost-button" onClick={() => void refreshDashboardData()}>
+                刷新后台数据
+              </button>
+            </div>
+          }
+        >
           <CoverImage
             src={typeof form.coverImage === "string" ? form.coverImage : ""}
             alt={String(form.nameZh || "航空器封面")}
@@ -337,16 +413,44 @@ export default function AdminDashboardPage() {
             className="mb-4 aspect-[16/8]"
           />
           <div className="grid gap-4 md:grid-cols-2">
-            {Object.entries(form).map(([key, value]) => (
-              <label key={key} className={`form-field ${key === "description" || key === "summary" ? "md:col-span-2" : ""}`}>
-                <span className="text-sm text-[var(--muted)]">{key}</span>
-                {key === "description" || key === "summary" ? (
-                  <textarea className="input-base min-h-28" name={key} value={String(value)} onChange={onFieldChange} />
+            {formFieldMeta.map((field) => (
+              <label
+                key={field.key}
+                className={`form-field ${field.type === "textarea" ? "md:col-span-2" : ""}`}
+              >
+                <span className="text-sm text-[var(--muted)]">{field.label}</span>
+                {field.type === "textarea" ? (
+                  <textarea
+                    className="input-base min-h-28"
+                    name={field.key}
+                    value={String(form[field.key] ?? "")}
+                    onChange={onFieldChange}
+                    placeholder={field.placeholder}
+                  />
                 ) : (
-                  <input className="input-base" name={key} value={String(value)} onChange={onFieldChange} />
+                  <input
+                    className="input-base"
+                    name={field.key}
+                    type={field.type === "number" ? "number" : "text"}
+                    value={String(form[field.key] ?? "")}
+                    onChange={onFieldChange}
+                    placeholder={field.placeholder}
+                  />
                 )}
+                {field.hint ? <span className="field-hint">{field.hint}</span> : null}
               </label>
             ))}
+            <label className="form-field md:col-span-2">
+              <span className="text-sm text-[var(--muted)]">封面图地址</span>
+              <input
+                className="input-base"
+                name="coverImage"
+                value={String(form.coverImage ?? "")}
+                onChange={onFieldChange}
+                placeholder="/uploads/example.png 或完整图片地址"
+              />
+              <span className="field-hint">可直接填写图片地址，也可以使用下面的图片上传功能。</span>
+            </label>
             <label className="form-field md:col-span-2">
               <span className="text-sm text-[var(--muted)]">上传封面图片</span>
               <input className="input-base" type="file" accept="image/*" onChange={onUploadImage} />
@@ -355,19 +459,48 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="dashboard-actions mt-5">
-            <button className="ghost-button" onClick={validateForm}>先做字段校验</button>
-            <button className="action-button" onClick={createAircraft}>创建航空器</button>
-            <button className="ghost-button" onClick={updateAircraft}>更新已创建航空器</button>
-            <button className="ghost-button" onClick={submitReview}>提交审核</button>
-            <button className="ghost-button" onClick={() => approveOrReject("approve")}>审核通过</button>
-            <button className="ghost-button" onClick={() => approveOrReject("reject")}>审核驳回</button>
+            <button className="ghost-button" type="button" onClick={validateForm} disabled={!!actionState}>
+              先做字段校验
+            </button>
+            <button className="action-button" type="button" onClick={createAircraft} disabled={!!actionState}>
+              创建航空器
+            </button>
+            <button className="ghost-button" type="button" onClick={updateAircraft} disabled={!createdAircraft || !!actionState}>
+              更新已创建航空器
+            </button>
+            <button className="ghost-button" type="button" onClick={submitReview} disabled={!createdAircraft || !!actionState}>
+              提交审核
+            </button>
+            <button className="ghost-button" type="button" onClick={() => approveOrReject("approve")} disabled={!workflowId || !!actionState}>
+              审核通过
+            </button>
+            <button className="ghost-button" type="button" onClick={() => approveOrReject("reject")} disabled={!workflowId || !!actionState}>
+              审核驳回
+            </button>
           </div>
+
+          {createdAircraft ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Badge tone="success">当前草稿：{createdAircraft.nameZh}</Badge>
+              <Badge>{createdAircraft.status}</Badge>
+            </div>
+          ) : null}
         </Panel>
 
         <Panel title="校验结果" kicker="POST /api/admin/content/validate">
           {validation ? (
             <div className="space-y-4 text-sm text-[var(--muted)]">
               <p>校验通过：{validation.passed ? "是" : "否"}</p>
+              <div>
+                <p className="mb-2 font-medium text-[var(--text)]">缺失字段</p>
+                <div className="flex flex-wrap gap-2">
+                  {validation.missingFields.length > 0 ? (
+                    validation.missingFields.map((item) => <span key={item} className="code-chip">{item}</span>)
+                  ) : (
+                    <span className="code-chip">无</span>
+                  )}
+                </div>
+              </div>
               <div>
                 <p className="mb-2 font-medium text-[var(--text)]">阻塞项</p>
                 <ul className="space-y-2">
@@ -382,7 +515,10 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="empty-tip">先执行字段校验，再查看阻塞项与建议项。</div>
+            <EmptyState
+              title="还没有校验结果"
+              description="先执行字段校验，再查看缺失字段、阻塞项与建议项。"
+            />
           )}
         </Panel>
       </div>
@@ -416,9 +552,12 @@ export default function AdminDashboardPage() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_360px]">
         <Panel title="已有航空器内容库" kicker="GET /api/admin/aircraft">
-          <div className="surface-grid md:grid-cols-2">
-            {adminAircraft.map((item) => (
-              <article key={item.id} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+          {adminAircraft.length === 0 ? (
+            <EmptyState title="内容库为空" description="当前还没有后台航空器记录，可先用左侧表单创建一条内容。" />
+          ) : (
+            <div className="surface-grid md:grid-cols-2">
+              {adminAircraft.map((item) => (
+                <article key={item.id} className="content-card">
                 <CoverImage
                   src={item.coverImage}
                   alt={item.nameZh}
@@ -437,21 +576,22 @@ export default function AdminDashboardPage() {
                   <span className="code-chip">阻塞项 {item.blockingIssueCount}</span>
                   <span className="code-chip">建议项 {item.warningIssueCount}</span>
                 </div>
-                  <button className="ghost-button mt-4" onClick={() => loadAircraftAsDraft(item)}>
+                <button className="ghost-button mt-4" type="button" onClick={() => loadAircraftAsDraft(item)}>
                   载入表单继续编辑
                 </button>
               </article>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Panel>
 
         <Panel title="待审核队列" kicker="GET /api/admin/review-queue">
           <div className="surface-grid">
             {reviewQueue.length === 0 ? (
-              <div className="empty-tip">当前没有待审核条目。</div>
+              <EmptyState title="当前没有待审核条目" description="提交审核后，新建内容会显示在这里。" />
             ) : (
               reviewQueue.map((item) => (
-                <article key={item.workflowId} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                <article key={item.workflowId} className="content-card">
                   <CoverImage
                     src={item.entityCoverImage}
                     alt={item.entityName}
@@ -466,7 +606,7 @@ export default function AdminDashboardPage() {
                     <span className="code-chip">{item.workflowId}</span>
                     {item.taskStatus ? <span className="code-chip">{item.taskStatus}</span> : null}
                   </div>
-                  <button className="ghost-button mt-4" onClick={() => setWorkflowId(item.workflowId)}>
+                  <button className="ghost-button mt-4" type="button" onClick={() => setWorkflowId(item.workflowId)}>
                     选为当前审核流
                   </button>
                 </article>

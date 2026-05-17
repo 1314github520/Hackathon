@@ -52,8 +52,8 @@ DATABASE_PROVIDER=mysql npm run dev
 
 默认地址：
 
-- API 服务：`http://localhost:3001`
-- 健康检查：`http://localhost:3001/health`
+- API 服务：`http://localhost:9001`
+- 健康检查：`http://localhost:9001/health`
 
 ## 服务信息
 

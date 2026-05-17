@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { joinApiPath } from "@/lib/env";
 
 type CoverImageProps = {
@@ -18,13 +20,21 @@ export function CoverImage({
   imageClassName = "",
 }: CoverImageProps) {
   const finalSrc = src ? joinApiPath(src) : "";
+  const [failedSrc, setFailedSrc] = useState("");
+  const showImage = Boolean(finalSrc) && failedSrc !== finalSrc;
 
   return (
     <div className={`cover-frame ${className}`}>
-      {finalSrc ? (
+      {showImage ? (
         // A plain img keeps support simple for local uploads and arbitrary remote demo images.
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={finalSrc} alt={alt} className={`cover-media ${imageClassName}`.trim()} />
+        <img
+          src={finalSrc}
+          alt={alt}
+          className={`cover-media ${imageClassName}`.trim()}
+          loading="lazy"
+          onError={() => setFailedSrc(finalSrc)}
+        />
       ) : (
         <div className="cover-fallback">
           <span className="cover-fallback-kicker">Flyer Guide</span>

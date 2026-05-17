@@ -1,42 +1,76 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { EntityCard } from "@/components/feature/entity-card";
 import { AppShell } from "@/components/layout/app-shell";
+import { EmptyState, LoadingState, Notice } from "@/components/ui/feedback";
 import { Panel, StatCard } from "@/components/ui/panel";
 import { api } from "@/lib/api/service";
 import { formatMeta } from "@/lib/format";
 import type { Aircraft, EventItem, PersonItem } from "@/types/api";
 
 export default function HomePage() {
-  const [health, setHealth] = useState("加载中");
+  const [health, setHealth] = useState("待检查");
   const [aircraft, setAircraft] = useState<Aircraft[]>([]);
   const [events, setEvents] = useState<EventItem[]>([]);
   const [persons, setPersons] = useState<PersonItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [healthResult, aircraftResult, eventResult, personResult] = await Promise.all([
-          api.health(),
-          api.listAircraft(),
-          api.listEvents(),
-          api.listPersons(),
-        ]);
-        setHealth(healthResult.status);
-        setAircraft(aircraftResult);
-        setEvents(eventResult);
-        setPersons(personResult);
-      } catch (loadError) {
-        setError(loadError instanceof Error ? loadError.message : "加载首页数据失败");
-      }
-    };
+  const hasContent = aircraft.length > 0 || events.length > 0 || persons.length > 0;
 
-    void load();
+  const loadHome = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const [healthResult, aircraftResult, eventResult, personResult] = await Promise.all([
+        api.health(),
+        api.listAircraft(),
+        api.listEvents(),
+        api.listPersons(),
+      ]);
+      setHealth(healthResult.status);
+      setAircraft(aircraftResult);
+      setEvents(eventResult);
+      setPersons(personResult);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "加载首页数据失败");
+      setHealth("异常");
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void loadHome();
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [loadHome]);
+
+  const highlights = useMemo(
+    () => [
+      {
+        title: "多类型知识整合",
+        desc: "飞机、事件、人物统一纳入一套浏览和搜索路径。",
+        code: "01",
+      },
+      {
+        title: "航空器横向对比",
+        desc: "围绕尺寸、速度、航程、发动机和首飞年份快速比差异。",
+        code: "02",
+      },
+      {
+        title: "内容管理闭环",
+        desc: "从字段校验、新建到提审和审核，适合赛事演示后台能力。",
+        code: "03",
+      },
+    ],
+    [],
+  );
 
   return (
     <AppShell
@@ -56,37 +90,38 @@ export default function HomePage() {
       <div className="hero-grid">
         <Panel title="平台亮点" kicker="核心能力" className="hero-panel">
           <div className="info-list">
-            <div className="info-list-item">
-              <div>
-                <div className="font-medium">多类型知识整合</div>
-                <div className="muted-text text-sm">飞机、事件、人物统一纳入一套浏览和搜索路径。</div>
+            {highlights.map((item) => (
+              <div key={item.code} className="info-list-item">
+                <div>
+                  <div className="font-medium">{item.title}</div>
+                  <div className="muted-text text-sm">{item.desc}</div>
+                </div>
+                <span className="code-chip">{item.code}</span>
               </div>
-              <span className="code-chip">01</span>
-            </div>
-            <div className="info-list-item">
-              <div>
-                <div className="font-medium">航空器横向对比</div>
-                <div className="muted-text text-sm">围绕尺寸、速度、航程、发动机和首飞年份快速比差异。</div>
-              </div>
-              <span className="code-chip">02</span>
-            </div>
-            <div className="info-list-item">
-              <div>
-                <div className="font-medium">内容管理闭环</div>
-                <div className="muted-text text-sm">从字段校验、新建到提审和审核，适合赛事演示后台能力。</div>
-              </div>
-              <span className="code-chip">03</span>
-            </div>
+            ))}
           </div>
         </Panel>
 
         <Panel title="当前联调状态" kicker="系统概览" className="hero-panel">
           <div className="hero-stats">
-            <StatCard label="后端状态" value={health} tone={health === "ok" ? "success" : "warning"} />
+            <StatCard label="后端状态" value={health} tone={health === "ok" ? "success" : health === "异常" ? "warning" : "default"} />
             <StatCard label="航空器数量" value={`${aircraft.length} 条`} />
             <StatCard label="事件和人物" value={`${events.length + persons.length} 条`} />
           </div>
-          {error ? <p className="status-error mt-4">{error}</p> : null}
+          {loading ? <LoadingState label="正在同步首页数据" description="从后端读取公开内容和健康状态。" compact /> : null}
+          {error ? (
+            <Notice
+              tone="error"
+              title="首页数据加载失败"
+              actions={
+                <button type="button" className="ghost-button" onClick={() => void loadHome()}>
+                  重新加载
+                </button>
+              }
+            >
+              {error}
+            </Notice>
+          ) : null}
         </Panel>
       </div>
 
@@ -119,50 +154,72 @@ export default function HomePage() {
         </Link>
       </div>
 
-      <div className="three-column">
-        <Panel title="航空器" kicker="GET /api/public/aircraft">
-          <div className="surface-grid">
-            {aircraft.slice(0, 3).map((item) => (
-              <EntityCard
-                key={item.id}
-                item={item}
-                href={`/aircraft/${item.slug}`}
-                meta={[
-                  formatMeta("首飞", item.firstFlightYear),
-                  formatMeta("发动机", item.specs.engineType || null),
-                  formatMeta("航程", item.specs.rangeKm ? `${item.specs.rangeKm} km` : null),
-                ]}
-              />
-            ))}
-          </div>
+      {loading && !hasContent ? (
+        <Panel title="首页内容" kicker="公开内容加载中">
+          <LoadingState label="正在整理精选内容" description="内容卡片会在数据准备完成后显示。" />
         </Panel>
+      ) : null}
 
-        <Panel title="航空事件" kicker="GET /api/public/events">
-          <div className="surface-grid">
-            {events.slice(0, 3).map((item) => (
-              <EntityCard
-                key={item.id}
-                item={item}
-                href="/events"
-                meta={[formatMeta("类型", item.eventType), formatMeta("日期", item.eventDate)]}
-              />
-            ))}
-          </div>
+      {!loading && !error && !hasContent ? (
+        <Panel title="首页内容" kicker="暂无数据">
+          <EmptyState
+            title="当前还没有公开内容"
+            description="后端没有返回已发布的航空器、事件或人物数据，可先前往后台创建并审核内容。"
+            actions={
+              <Link href="/admin/dashboard" className="action-button">
+                去后台补充内容
+              </Link>
+            }
+          />
         </Panel>
+      ) : null}
 
-        <Panel title="航空人物" kicker="GET /api/public/persons">
-          <div className="surface-grid">
-            {persons.slice(0, 3).map((item) => (
-              <EntityCard
-                key={item.id}
-                item={item}
-                href="/persons"
-                meta={[formatMeta("身份", item.personType), formatMeta("国籍", item.nationality)]}
-              />
-            ))}
-          </div>
-        </Panel>
-      </div>
+      {hasContent ? (
+        <div className="three-column">
+          <Panel title="航空器" kicker="GET /api/public/aircraft">
+            <div className="surface-grid">
+              {aircraft.slice(0, 3).map((item) => (
+                <EntityCard
+                  key={item.id}
+                  item={item}
+                  href={`/aircraft/${item.slug}`}
+                  meta={[
+                    formatMeta("首飞", item.firstFlightYear),
+                    formatMeta("发动机", item.specs.engineType || null),
+                    formatMeta("航程", item.specs.rangeKm ? `${item.specs.rangeKm} km` : null),
+                  ]}
+                />
+              ))}
+            </div>
+          </Panel>
+
+          <Panel title="航空事件" kicker="GET /api/public/events">
+            <div className="surface-grid">
+              {events.slice(0, 3).map((item) => (
+                <EntityCard
+                  key={item.id}
+                  item={item}
+                  href={`/events/${item.slug}`}
+                  meta={[formatMeta("类型", item.eventType), formatMeta("日期", item.eventDate)]}
+                />
+              ))}
+            </div>
+          </Panel>
+
+          <Panel title="航空人物" kicker="GET /api/public/persons">
+            <div className="surface-grid">
+              {persons.slice(0, 3).map((item) => (
+                <EntityCard
+                  key={item.id}
+                  item={item}
+                  href={`/persons/${item.slug}`}
+                  meta={[formatMeta("身份", item.personType), formatMeta("国籍", item.nationality)]}
+                />
+              ))}
+            </div>
+          </Panel>
+        </div>
+      ) : null}
     </AppShell>
   );
 }
