@@ -34,6 +34,8 @@ export type Aircraft = {
   firstFlightYear: number | null;
   summary: string;
   description?: string;
+  source?: string;
+  sourceUrl?: string;
   coverImage?: string;
   specs: AircraftSpecs;
   status: string;
@@ -46,12 +48,14 @@ export type AircraftDetail = Aircraft & {
     slug: string;
     title: string;
     summary: string;
+    coverImage?: string;
   }>;
   relatedPersons: Array<{
     id: string;
     slug: string;
     nameZh: string;
     summary: string;
+    coverImage?: string;
   }>;
 };
 
@@ -65,6 +69,9 @@ export type EventItem = {
   summary: string;
   description: string;
   impact: string;
+  coverImage?: string;
+  relatedAircraftCount?: number;
+  relatedPersonCount?: number;
   relatedAircraftIds?: string[];
   relatedPersonIds?: string[];
   status: string;
@@ -79,6 +86,9 @@ export type PersonItem = {
   nationality: string;
   summary: string;
   biography: string;
+  coverImage?: string;
+  relatedAircraftCount?: number;
+  relatedEventCount?: number;
   relatedAircraftIds?: string[];
   relatedEventIds?: string[];
   status: string;
@@ -90,6 +100,7 @@ export type SearchItem = {
   entityType: "aircraft" | "event" | "person";
   title: string;
   summary: string;
+  coverImage?: string;
   meta: Record<string, string | number | null>;
 };
 
@@ -117,6 +128,8 @@ export type FavoriteItem = {
   entityType: string;
   entityId: string;
   entityName: string;
+  entitySlug?: string;
+  entityCoverImage?: string;
   createdAt: string;
 };
 
@@ -126,6 +139,8 @@ export type HistoryItem = {
   entityType: string;
   entityId: string;
   entityName: string;
+  entitySlug?: string;
+  entityCoverImage?: string;
   viewCount: number;
   lastViewedAt: string;
 };
@@ -135,6 +150,31 @@ export type DashboardSummary = {
   missingFieldCount: number;
   reviewPendingCount: number;
   weeklyFixRate: string;
+};
+
+export type AdminAircraftItem = Aircraft & {
+  missingFieldCount: number;
+  blockingIssueCount: number;
+  warningIssueCount: number;
+};
+
+export type ReviewQueueItem = {
+  workflowId: string;
+  entityId: string;
+  entityName: string;
+  entityStatus: string;
+  entityCoverImage?: string;
+  submittedAt: string;
+  reviewerId: string;
+  taskId: string | null;
+  taskStatus: string | null;
+};
+
+export type UploadMediaResult = {
+  filename: string;
+  originalName: string;
+  path: string;
+  url: string;
 };
 
 export type ValidationResult = {

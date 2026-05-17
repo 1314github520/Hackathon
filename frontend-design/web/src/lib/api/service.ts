@@ -1,5 +1,6 @@
 import { apiRequest } from "@/lib/api/client";
 import type {
+  AdminAircraftItem,
   Aircraft,
   AircraftDetail,
   AuditLog,
@@ -9,9 +10,11 @@ import type {
   HistoryItem,
   LoginPayload,
   PersonItem,
+  ReviewQueueItem,
   ReviewResult,
   SearchItem,
   SessionPayload,
+  UploadMediaResult,
   ValidationResult,
 } from "@/types/api";
 
@@ -81,6 +84,10 @@ export const api = {
     }),
   adminSummary: (token: string) =>
     apiRequest<DashboardSummary>("/api/admin/dashboard/summary", { token }),
+  adminAircraft: (token: string) =>
+    apiRequest<AdminAircraftItem[]>("/api/admin/aircraft", { token }),
+  reviewQueue: (token: string) =>
+    apiRequest<ReviewQueueItem[]>("/api/admin/review-queue", { token }),
   validateAircraft: (
     token: string,
     payload: Record<string, unknown> & { requirePublishReady?: boolean },
@@ -121,4 +128,14 @@ export const api = {
       body: { workflowId, comment },
     }),
   auditLogs: (token: string) => apiRequest<AuditLog[]>("/api/admin/audit-logs", { token }),
+  uploadMedia: (token: string, file: File) => {
+    const body = new FormData();
+    body.append("file", file);
+    return apiRequest<UploadMediaResult>("/api/admin/media/upload", {
+      method: "POST",
+      token,
+      body,
+      isFormData: true,
+    });
+  },
 };

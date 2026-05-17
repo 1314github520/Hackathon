@@ -4,10 +4,24 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { CoverImage } from "@/components/ui/cover-image";
 import { Panel } from "@/components/ui/panel";
 import { api } from "@/lib/api/service";
 import { isUnauthorizedError, readStoredSession, syncFrontendSession, writeStoredSession } from "@/lib/session";
 import type { FavoriteItem, HistoryItem } from "@/types/api";
+
+function buildEntityHref(item: { entityType: string; entitySlug?: string }) {
+  if (item.entityType === "aircraft" && item.entitySlug) {
+    return `/aircraft/${item.entitySlug}`;
+  }
+  if (item.entityType === "event") {
+    return "/events";
+  }
+  if (item.entityType === "person") {
+    return "/persons";
+  }
+  return "/search";
+}
 
 export default function MePage() {
   const [session, setSession] = useState(readStoredSession("frontend"));
@@ -162,13 +176,24 @@ export default function MePage() {
                 ) : (
                   favorites.map((item) => (
                     <div key={item.id} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                      <CoverImage
+                        src={item.entityCoverImage}
+                        alt={item.entityName}
+                        label={item.entityType}
+                        className="mb-4 aspect-[16/9]"
+                      />
                       <p className="font-medium">{item.entityName}</p>
                       <p className="mt-2 text-sm text-[var(--muted)]">
                         类型：{item.entityType} · 实体 ID：{item.entityId}
                       </p>
-                      <button className="ghost-button mt-3" onClick={() => void removeFavorite(item.id)}>
-                        取消收藏
-                      </button>
+                      <div className="mt-3 flex flex-wrap gap-3">
+                        <Link href={buildEntityHref(item)} className="ghost-button">
+                          查看内容
+                        </Link>
+                        <button className="ghost-button" onClick={() => void removeFavorite(item.id)}>
+                          取消收藏
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
@@ -182,10 +207,19 @@ export default function MePage() {
                 ) : (
                   history.map((item) => (
                     <div key={item.id} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                      <CoverImage
+                        src={item.entityCoverImage}
+                        alt={item.entityName}
+                        label={item.entityType}
+                        className="mb-4 aspect-[16/9]"
+                      />
                       <p className="font-medium">{item.entityName}</p>
                       <p className="mt-2 text-sm text-[var(--muted)]">
                         浏览次数：{item.viewCount} · 最近浏览：{new Date(item.lastViewedAt).toLocaleString()}
                       </p>
+                      <Link href={buildEntityHref(item)} className="ghost-button mt-3">
+                        再看一次
+                      </Link>
                     </div>
                   ))
                 )}

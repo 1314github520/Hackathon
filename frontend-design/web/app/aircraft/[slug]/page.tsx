@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 
 import { EntityCard } from "@/components/feature/entity-card";
 import { AppShell } from "@/components/layout/app-shell";
+import { CoverImage } from "@/components/ui/cover-image";
 import { Badge, Panel } from "@/components/ui/panel";
 import { api } from "@/lib/api/service";
 import { isUnauthorizedError, readStoredSession, syncFrontendSession, writeStoredSession } from "@/lib/session";
@@ -146,6 +147,12 @@ export default function AircraftDetailPage() {
           <div className="two-column">
             <Panel title="核心信息" kicker="GET /api/public/aircraft/:id">
               <div className="grid gap-4">
+                <CoverImage
+                  src={item.coverImage}
+                  alt={item.nameZh}
+                  label={item.aircraftType}
+                  className="aspect-[16/9]"
+                />
                 <p className="text-base leading-7 text-[var(--text)]">{item.summary}</p>
                 <p className="text-sm leading-7 text-[var(--muted)]">{item.description}</p>
                 <div className="flex flex-wrap gap-2">
@@ -187,12 +194,24 @@ export default function AircraftDetailPage() {
               <div className="surface-grid">
                 {item.relatedEvents.map((event) => (
                   <div key={event.id} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                    <CoverImage
+                      src={event.coverImage}
+                      alt={event.title}
+                      label="相关事件"
+                      className="mb-4 aspect-[16/9]"
+                    />
                     <h4 className="text-base font-semibold">{event.title}</h4>
                     <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{event.summary}</p>
                   </div>
                 ))}
                 {item.relatedPersons.map((person) => (
                   <div key={person.id} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                    <CoverImage
+                      src={person.coverImage}
+                      alt={person.nameZh}
+                      label="相关人物"
+                      className="mb-4 aspect-[16/9]"
+                    />
                     <h4 className="text-base font-semibold">{person.nameZh}</h4>
                     <p className="mt-2 text-sm leading-6 text-[var(--muted)]">{person.summary}</p>
                   </div>

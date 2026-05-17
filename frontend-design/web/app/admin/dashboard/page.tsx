@@ -4,11 +4,19 @@ import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { AppShell } from "@/components/layout/app-shell";
+import { CoverImage } from "@/components/ui/cover-image";
 import { Badge, Panel, StatCard } from "@/components/ui/panel";
 import { demoAircraftPayload } from "@/data/demo";
 import { api } from "@/lib/api/service";
 import { isUnauthorizedError, readStoredSession, syncAdminSession, writeStoredSession } from "@/lib/session";
-import type { Aircraft, AuditLog, DashboardSummary, ValidationResult } from "@/types/api";
+import type {
+  AdminAircraftItem,
+  Aircraft,
+  AuditLog,
+  DashboardSummary,
+  ReviewQueueItem,
+  ValidationResult,
+} from "@/types/api";
 
 type AircraftFormState = Record<string, string | number>;
 
@@ -25,6 +33,9 @@ export default function AdminDashboardPage() {
   const [createdAircraft, setCreatedAircraft] = useState<Aircraft | null>(null);
   const [workflowId, setWorkflowId] = useState("");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+  const [adminAircraft, setAdminAircraft] = useState<AdminAircraftItem[]>([]);
+  const [reviewQueue, setReviewQueue] = useState<ReviewQueueItem[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [form, setForm] = useState<AircraftFormState>(initialFormState);
@@ -73,9 +84,16 @@ export default function AdminDashboardPage() {
 
       try {
         setError("");
-        const [summaryResult, logsResult] = await Promise.all([api.adminSummary(token), api.auditLogs(token)]);
+        const [summaryResult, logsResult, aircraftResult, reviewQueueResult] = await Promise.all([
+          api.adminSummary(token),
+          api.auditLogs(token),
+          api.adminAircraft(token),
+          api.reviewQueue(token),
+        ]);
         setSummary(summaryResult);
         setAuditLogs(logsResult);
+        setAdminAircraft(aircraftResult);
+        setReviewQueue(reviewQueueResult);
       } catch (loadError) {
         if (isUnauthorizedError(loadError)) {
           writeStoredSession("admin", null);
@@ -90,12 +108,71 @@ export default function AdminDashboardPage() {
     void load();
   }, [token]);
 
+  async function refreshDashboardData() {
+    if (!token) {
+      return;
+    }
+
+    const [summaryResult, logsResult, aircraftResult, reviewQueueResult] = await Promise.all([
+      api.adminSummary(token),
+      api.auditLogs(token),
+      api.adminAircraft(token),
+      api.reviewQueue(token),
+    ]);
+    setSummary(summaryResult);
+    setAuditLogs(logsResult);
+    setAdminAircraft(aircraftResult);
+    setReviewQueue(reviewQueueResult);
+  }
+
   function onFieldChange(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
     setForm((current) => ({
       ...current,
       [name]: value,
     }));
+  }
+
+  function loadAircraftAsDraft(item: AdminAircraftItem) {
+    setCreatedAircraft(item);
+    setForm({
+      nameZh: item.nameZh || "",
+      aircraftType: item.aircraftType || "",
+      summary: item.summary || "",
+      description: item.description || "",
+      source: item.source || "",
+      manufacturer: item.manufacturer || "",
+      countryOfOrigin: item.countryOfOrigin || "",
+      eraLabel: item.eraLabel || "",
+      firstFlightYear: item.firstFlightYear || "",
+      rangeKm: item.specs.rangeKm || "",
+      engineType: item.specs.engineType || "",
+      coverImage: item.coverImage || "",
+    });
+    setMessage(`已载入航空器：${item.nameZh}`);
+  }
+
+  async function onUploadImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !token) {
+      return;
+    }
+
+    try {
+      setUploading(true);
+      setError("");
+      const result = await api.uploadMedia(token, file);
+      setForm((current) => ({
+        ...current,
+        coverImage: result.path,
+      }));
+      setMessage(`图片上传成功：${result.originalName}`);
+    } catch (uploadError) {
+      setError(uploadError instanceof Error ? uploadError.message : "图片上传失败");
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
   }
 
   async function validateForm() {
@@ -131,8 +208,7 @@ export default function AdminDashboardPage() {
       const result = await api.createAircraft(token, form);
       setCreatedAircraft(result);
       setMessage(`已创建航空器：${result.nameZh}`);
-      const logs = await api.auditLogs(token);
-      setAuditLogs(logs);
+      await refreshDashboardData();
     } catch (createError) {
       if (isUnauthorizedError(createError)) {
         writeStoredSession("admin", null);
@@ -155,7 +231,7 @@ export default function AdminDashboardPage() {
       const result = await api.updateAircraft(token, createdAircraft.id, form);
       setCreatedAircraft(result);
       setMessage(`已更新航空器：${result.nameZh}`);
-      setAuditLogs(await api.auditLogs(token));
+      await refreshDashboardData();
     } catch (updateError) {
       if (isUnauthorizedError(updateError)) {
         writeStoredSession("admin", null);
@@ -179,7 +255,7 @@ export default function AdminDashboardPage() {
       const nextWorkflowId = String((result.workflow as { id?: string })?.id || "");
       setWorkflowId(nextWorkflowId);
       setMessage(`提审成功，工作流 ID：${nextWorkflowId}`);
-      setAuditLogs(await api.auditLogs(token));
+      await refreshDashboardData();
     } catch (reviewError) {
       if (isUnauthorizedError(reviewError)) {
         writeStoredSession("admin", null);
@@ -206,7 +282,7 @@ export default function AdminDashboardPage() {
         await api.rejectReview(token, workflowId, "联调验证：演示驳回路径");
         setMessage("已完成审核驳回联调。");
       }
-      setAuditLogs(await api.auditLogs(token));
+      await refreshDashboardData();
     } catch (decisionError) {
       if (isUnauthorizedError(decisionError)) {
         writeStoredSession("admin", null);
@@ -254,6 +330,12 @@ export default function AdminDashboardPage() {
 
       <div className="two-column">
         <Panel title="航空器表单联调" kicker="校验 + 创建 + 提审">
+          <CoverImage
+            src={typeof form.coverImage === "string" ? form.coverImage : ""}
+            alt={String(form.nameZh || "航空器封面")}
+            label="封面图预览"
+            className="mb-4 aspect-[16/8]"
+          />
           <div className="grid gap-4 md:grid-cols-2">
             {Object.entries(form).map(([key, value]) => (
               <label key={key} className={`form-field ${key === "description" || key === "summary" ? "md:col-span-2" : ""}`}>
@@ -265,6 +347,11 @@ export default function AdminDashboardPage() {
                 )}
               </label>
             ))}
+            <label className="form-field md:col-span-2">
+              <span className="text-sm text-[var(--muted)]">上传封面图片</span>
+              <input className="input-base" type="file" accept="image/*" onChange={onUploadImage} />
+              {uploading ? <span className="text-sm text-[var(--muted)]">图片上传中...</span> : null}
+            </label>
           </div>
 
           <div className="dashboard-actions mt-5">
@@ -326,6 +413,68 @@ export default function AdminDashboardPage() {
           </table>
         </div>
       </Panel>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_360px]">
+        <Panel title="已有航空器内容库" kicker="GET /api/admin/aircraft">
+          <div className="surface-grid md:grid-cols-2">
+            {adminAircraft.map((item) => (
+              <article key={item.id} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                <CoverImage
+                  src={item.coverImage}
+                  alt={item.nameZh}
+                  label={item.aircraftType}
+                  className="mb-4 aspect-[16/9]"
+                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="text-lg font-semibold">{item.nameZh}</h4>
+                  <Badge tone={item.status === "published" ? "success" : item.status === "in_review" ? "warning" : "default"}>
+                    {item.status}
+                  </Badge>
+                </div>
+                <p className="mt-2 text-sm text-[var(--muted)]">{item.summary}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <span className="code-chip">缺失字段 {item.missingFieldCount}</span>
+                  <span className="code-chip">阻塞项 {item.blockingIssueCount}</span>
+                  <span className="code-chip">建议项 {item.warningIssueCount}</span>
+                </div>
+                  <button className="ghost-button mt-4" onClick={() => loadAircraftAsDraft(item)}>
+                  载入表单继续编辑
+                </button>
+              </article>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="待审核队列" kicker="GET /api/admin/review-queue">
+          <div className="surface-grid">
+            {reviewQueue.length === 0 ? (
+              <div className="empty-tip">当前没有待审核条目。</div>
+            ) : (
+              reviewQueue.map((item) => (
+                <article key={item.workflowId} className="rounded-xl border border-[var(--line)] bg-[var(--panel-soft)] p-4">
+                  <CoverImage
+                    src={item.entityCoverImage}
+                    alt={item.entityName}
+                    label="审核队列"
+                    className="mb-4 aspect-[16/10]"
+                  />
+                  <h4 className="text-base font-semibold">{item.entityName}</h4>
+                  <p className="mt-2 text-sm text-[var(--muted)]">
+                    状态：{item.entityStatus} · 提交时间：{new Date(item.submittedAt).toLocaleString()}
+                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="code-chip">{item.workflowId}</span>
+                    {item.taskStatus ? <span className="code-chip">{item.taskStatus}</span> : null}
+                  </div>
+                  <button className="ghost-button mt-4" onClick={() => setWorkflowId(item.workflowId)}>
+                    选为当前审核流
+                  </button>
+                </article>
+              ))
+            )}
+          </div>
+        </Panel>
+      </div>
     </AppShell>
   );
 }

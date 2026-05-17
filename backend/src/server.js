@@ -18,6 +18,13 @@ const upload = multer({
   dest: uploadsDir,
   limits: {
     fileSize: 5 * 1024 * 1024
+  },
+  fileFilter(req, file, callback) {
+    if (!file.mimetype.startsWith("image/")) {
+      callback(new Error("仅支持上传图片文件"));
+      return;
+    }
+    callback(null, true);
   }
 });
 
@@ -51,7 +58,54 @@ function fail(res, status, message, details) {
   });
 }
 
-function pickPublicAircraft(aircraft) {
+function getRequestOrigin(req) {
+  const protocolHeader = String(req.headers["x-forwarded-proto"] || "").split(",")[0].trim();
+  const protocol = protocolHeader || req.protocol || "http";
+  const host = req.headers["x-forwarded-host"] || req.headers.host;
+  return `${protocol}://${host}`;
+}
+
+function normalizeMediaUrl(req, value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+  if (raw.startsWith("http://") || raw.startsWith("https://")) {
+    return raw;
+  }
+  if (raw.startsWith("/")) {
+    return `${getRequestOrigin(req)}${raw}`;
+  }
+  return `${getRequestOrigin(req)}/${raw}`;
+}
+
+function normalizeStoredMediaPath(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+  try {
+    const parsed = new URL(raw);
+    if (parsed.pathname.startsWith("/uploads/")) {
+      return parsed.pathname;
+    }
+    return raw;
+  } catch {
+    return raw;
+  }
+}
+
+function pickRelatedAircraftCover(req, db, ids = []) {
+  for (const id of ids) {
+    const aircraft = db.aircraft.find((item) => item.id === id && item.status === "published");
+    if (aircraft?.coverImage) {
+      return normalizeMediaUrl(req, aircraft.coverImage);
+    }
+  }
+  return "";
+}
+
+function pickPublicAircraft(req, aircraft) {
   return {
     id: aircraft.id,
     slug: aircraft.slug,
@@ -64,10 +118,30 @@ function pickPublicAircraft(aircraft) {
     firstFlightYear: aircraft.firstFlightYear,
     summary: aircraft.summary,
     description: aircraft.description,
-    coverImage: aircraft.coverImage,
+    source: aircraft.source,
+    sourceUrl: aircraft.sourceUrl,
+    coverImage: normalizeMediaUrl(req, aircraft.coverImage),
     specs: aircraft.specs,
     status: aircraft.status,
     specSourceConfidence: aircraft.specSourceConfidence
+  };
+}
+
+function pickPublicEvent(req, db, event) {
+  return {
+    ...event,
+    coverImage: pickRelatedAircraftCover(req, db, event.relatedAircraftIds),
+    relatedAircraftCount: Array.isArray(event.relatedAircraftIds) ? event.relatedAircraftIds.length : 0,
+    relatedPersonCount: Array.isArray(event.relatedPersonIds) ? event.relatedPersonIds.length : 0
+  };
+}
+
+function pickPublicPerson(req, db, person) {
+  return {
+    ...person,
+    coverImage: pickRelatedAircraftCover(req, db, person.relatedAircraftIds),
+    relatedAircraftCount: Array.isArray(person.relatedAircraftIds) ? person.relatedAircraftIds.length : 0,
+    relatedEventCount: Array.isArray(person.relatedEventIds) ? person.relatedEventIds.length : 0
   };
 }
 
@@ -96,6 +170,40 @@ function resolveEntityName(db, entityType, entityId) {
   return entityId;
 }
 
+function resolveEntityMeta(req, db, entityType, entityId) {
+  if (entityType === "aircraft") {
+    const item = db.aircraft.find((entry) => entry.id === entityId || entry.slug === entityId);
+    return item
+      ? {
+          entityName: item.nameZh,
+          entitySlug: item.slug,
+          entityCoverImage: normalizeMediaUrl(req, item.coverImage)
+        }
+      : { entityName: entityId, entitySlug: "", entityCoverImage: "" };
+  }
+  if (entityType === "event") {
+    const item = db.events.find((entry) => entry.id === entityId || entry.slug === entityId);
+    return item
+      ? {
+          entityName: item.title,
+          entitySlug: item.slug,
+          entityCoverImage: pickRelatedAircraftCover(req, db, item.relatedAircraftIds)
+        }
+      : { entityName: entityId, entitySlug: "", entityCoverImage: "" };
+  }
+  if (entityType === "person") {
+    const item = db.persons.find((entry) => entry.id === entityId || entry.slug === entityId);
+    return item
+      ? {
+          entityName: item.nameZh,
+          entitySlug: item.slug,
+          entityCoverImage: pickRelatedAircraftCover(req, db, item.relatedAircraftIds)
+        }
+      : { entityName: entityId, entitySlug: "", entityCoverImage: "" };
+  }
+  return { entityName: entityId, entitySlug: "", entityCoverImage: "" };
+}
+
 function findAircraftByIdOrSlug(db, value) {
   return db.aircraft.find((item) => item.id === value || item.slug === value);
 }
@@ -104,12 +212,12 @@ function ensureUniqueAircraftSlug(db, slug, currentId = null) {
   return !db.aircraft.some((item) => item.slug === slug && item.id !== currentId);
 }
 
-function buildSearchResults(db, query, type) {
+function buildSearchResults(req, db, query, type) {
   const keyword = String(query || "").trim().toLowerCase();
   const includeType = type && type !== "all" ? type : null;
   const results = [];
 
-  const pushMatch = (entityType, item, title, summary, meta) => {
+  const pushMatch = (entityType, item, title, summary, meta, coverImage) => {
     const haystack = `${title} ${summary}`.toLowerCase();
     if (!keyword || haystack.includes(keyword)) {
       if (!includeType || includeType === entityType) {
@@ -119,7 +227,8 @@ function buildSearchResults(db, query, type) {
           entityType,
           title,
           summary,
-          meta
+          meta,
+          coverImage: normalizeMediaUrl(req, coverImage)
         });
       }
     }
@@ -137,7 +246,8 @@ function buildSearchResults(db, query, type) {
           firstFlightYear: item.firstFlightYear,
           engineType: item.specs.engineType,
           rangeKm: item.specs.rangeKm
-        }
+        },
+        item.coverImage
       )
     );
 
@@ -152,7 +262,8 @@ function buildSearchResults(db, query, type) {
         {
           eventType: item.eventType,
           eventDate: item.eventDate
-        }
+        },
+        pickRelatedAircraftCover(req, db, item.relatedAircraftIds)
       )
     );
 
@@ -167,7 +278,8 @@ function buildSearchResults(db, query, type) {
         {
           personType: item.personType,
           nationality: item.nationality
-        }
+        },
+        pickRelatedAircraftCover(req, db, item.relatedAircraftIds)
       )
     );
 
@@ -219,14 +331,15 @@ function requireFrontendUser(req, res, next) {
   return requireSession(req, res, next, ["frontend_user"]);
 }
 
-function buildAircraftDetail(db, aircraft) {
+function buildAircraftDetail(req, db, aircraft) {
   const relatedEvents = db.events
     .filter((event) => event.relatedAircraftIds?.includes(aircraft.id))
     .map((event) => ({
       id: event.id,
       slug: event.slug,
       title: event.title,
-      summary: event.summary
+      summary: event.summary,
+      coverImage: pickRelatedAircraftCover(req, db, event.relatedAircraftIds)
     }));
 
   const relatedPersons = db.persons
@@ -235,11 +348,12 @@ function buildAircraftDetail(db, aircraft) {
       id: person.id,
       slug: person.slug,
       nameZh: person.nameZh,
-      summary: person.summary
+      summary: person.summary,
+      coverImage: pickRelatedAircraftCover(req, db, person.relatedAircraftIds)
     }));
 
   return {
-    ...pickPublicAircraft(aircraft),
+    ...pickPublicAircraft(req, aircraft),
     relatedEvents,
     relatedPersons
   };
@@ -277,7 +391,7 @@ function normalizeAircraftInput(payload, existing = {}) {
     source: String(payload.source || existing.source || "").trim(),
     sourceUrl: String(payload.sourceUrl || existing.sourceUrl || "").trim(),
     specSourceConfidence: payload.specSourceConfidence || existing.specSourceConfidence || "to_confirm",
-    coverImage: payload.coverImage || existing.coverImage || "",
+    coverImage: normalizeStoredMediaPath(payload.coverImage || existing.coverImage || ""),
     specs: {
       lengthM: Number(payload.lengthM || existing.specs?.lengthM || 0) || null,
       wingspanM: Number(payload.wingspanM || existing.specs?.wingspanM || 0) || null,
@@ -313,7 +427,7 @@ app.get("/api/public/aircraft", async (req, res) => {
       if (!keyword) return true;
       return `${item.nameZh} ${item.summary} ${item.manufacturer}`.toLowerCase().includes(keyword);
     })
-    .map(pickPublicAircraft);
+    .map((item) => pickPublicAircraft(req, item));
 
   ok(res, items, { total: items.length });
 });
@@ -324,7 +438,7 @@ app.post("/api/public/aircraft/compare", async (req, res) => {
   const comparison = db.aircraft
     .filter((item) => item.status === "published")
     .filter((item) => ids.includes(item.id) || ids.includes(item.slug))
-    .map(pickPublicAircraft);
+    .map((item) => pickPublicAircraft(req, item));
 
   ok(res, comparison, { total: comparison.length });
 });
@@ -339,12 +453,14 @@ app.get("/api/public/aircraft/:id", async (req, res) => {
     return fail(res, 404, "未找到对应飞行器");
   }
 
-  ok(res, buildAircraftDetail(db, aircraft));
+  ok(res, buildAircraftDetail(req, db, aircraft));
 });
 
 app.get("/api/public/events", async (req, res) => {
   const db = await readDb();
-  const items = db.events.filter((item) => item.status === "published");
+  const items = db.events
+    .filter((item) => item.status === "published")
+    .map((item) => pickPublicEvent(req, db, item));
   ok(
     res,
     items,
@@ -360,12 +476,14 @@ app.get("/api/public/events/:id", async (req, res) => {
     return fail(res, 404, "未找到对应事件");
   }
 
-  ok(res, event);
+  ok(res, pickPublicEvent(req, db, event));
 });
 
 app.get("/api/public/persons", async (req, res) => {
   const db = await readDb();
-  const items = db.persons.filter((item) => item.status === "published");
+  const items = db.persons
+    .filter((item) => item.status === "published")
+    .map((item) => pickPublicPerson(req, db, item));
   ok(
     res,
     items,
@@ -381,12 +499,12 @@ app.get("/api/public/persons/:id", async (req, res) => {
     return fail(res, 404, "未找到对应人物");
   }
 
-  ok(res, person);
+  ok(res, pickPublicPerson(req, db, person));
 });
 
 app.get("/api/public/search", async (req, res) => {
   const db = await readDb();
-  const items = buildSearchResults(db, req.query.q, req.query.type);
+  const items = buildSearchResults(req, db, req.query.q, req.query.type);
   ok(res, items, { total: items.length });
 });
 
@@ -407,7 +525,7 @@ app.get("/api/public/recommendations", async (req, res) => {
             (item.aircraftType === aircraft.aircraftType || item.eraLabel === aircraft.eraLabel)
         )
         .slice(0, 3)
-        .map(pickPublicAircraft);
+        .map((item) => pickPublicAircraft(req, item));
     }
   }
 
@@ -582,7 +700,7 @@ app.get("/api/user/favorites", requireFrontendUser, async (req, res) => {
     .filter((item) => item.userId === req.currentUser.id)
     .map((item) => ({
       ...item,
-      entityName: resolveEntityName(db, item.entityType, item.entityId)
+      ...resolveEntityMeta(req, db, item.entityType, item.entityId)
     }));
 
   ok(res, items, { total: items.length });
@@ -628,7 +746,7 @@ app.get("/api/user/history", requireFrontendUser, async (req, res) => {
     .sort((a, b) => new Date(b.lastViewedAt) - new Date(a.lastViewedAt))
     .map((item) => ({
       ...item,
-      entityName: resolveEntityName(db, item.entityType, item.entityId)
+      ...resolveEntityMeta(req, db, item.entityType, item.entityId)
     }));
 
   ok(res, items, { total: items.length });
@@ -687,6 +805,44 @@ app.get("/api/admin/dashboard/summary", requireAdmin, async (req, res) => {
     reviewPendingCount: db.approvalTasks.filter((item) => item.taskStatus === "pending").length,
     weeklyFixRate: "92%"
   });
+});
+
+app.get("/api/admin/aircraft", requireAdmin, async (req, res) => {
+  const db = await readDb();
+  const items = db.aircraft.map((item) => {
+    const validation = validateAircraftPayload(item, { requirePublishReady: item.status === "published" });
+    return {
+      ...pickPublicAircraft(req, item),
+      missingFieldCount: validation.missingFields.length,
+      blockingIssueCount: validation.blockingIssues.length,
+      warningIssueCount: validation.warningIssues.length
+    };
+  });
+  ok(res, items, { total: items.length });
+});
+
+app.get("/api/admin/review-queue", requireAdmin, async (req, res) => {
+  const db = await readDb();
+  const items = db.approvalWorkflows
+    .filter((workflow) => workflow.workflowStatus === "pending")
+    .map((workflow) => {
+      const aircraft = db.aircraft.find((item) => item.id === workflow.entityId);
+      const task = db.approvalTasks.find(
+        (item) => item.workflowId === workflow.id && item.taskStatus === "pending"
+      );
+      return {
+        workflowId: workflow.id,
+        entityId: workflow.entityId,
+        entityName: aircraft?.nameZh || workflow.entityId,
+        entityStatus: aircraft?.status || "unknown",
+        entityCoverImage: normalizeMediaUrl(req, aircraft?.coverImage),
+        submittedAt: workflow.submittedAt,
+        reviewerId: workflow.currentReviewerId,
+        taskId: task?.id || null,
+        taskStatus: task?.taskStatus || null
+      };
+    });
+  ok(res, items, { total: items.length });
 });
 
 app.post("/api/admin/content/validate", requireAdmin, async (req, res) => {
@@ -957,11 +1113,23 @@ app.post("/api/admin/media/upload", requireAdmin, upload.single("file"), async (
     return fail(res, 422, "未接收到文件");
   }
 
+  const storedPath = `/uploads/${path.basename(req.file.path)}`;
   ok(res, {
     filename: req.file.filename,
     originalName: req.file.originalname,
-    url: `/uploads/${path.basename(req.file.path)}`
+    path: storedPath,
+    url: normalizeMediaUrl(req, storedPath)
   });
+});
+
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    return fail(res, 422, error.message);
+  }
+  if (error) {
+    return fail(res, 422, error.message || "请求处理失败");
+  }
+  next();
 });
 
 app.use((req, res) => {
