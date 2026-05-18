@@ -687,6 +687,24 @@ textarea {
   transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
 }
 
+select.input-base {
+  appearance: none;
+  padding-right: 3rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgba(238, 244, 255, 0.9) 50%),
+    linear-gradient(135deg, rgba(238, 244, 255, 0.9) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.1rem) calc(50% - 0.12rem),
+    calc(100% - 0.78rem) calc(50% - 0.12rem);
+  background-size: 0.45rem 0.45rem, 0.45rem 0.45rem;
+  background-repeat: no-repeat;
+}
+
+select.input-base option {
+  color: #07111f;
+  background: #eef4ff;
+}
+
 .input-base:hover,
 .input-base:focus {
   border-color: var(--line-strong);

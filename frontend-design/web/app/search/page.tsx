@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 import { EntityCard } from "@/components/feature/entity-card";
@@ -28,7 +28,7 @@ export default function SearchPage() {
     return `当前搜索范围：${type}`;
   }, [type]);
 
-  const runSearch = useCallback(async (nextQuery = query, nextType = type) => {
+  async function runSearch(nextQuery: string, nextType: string) {
     try {
       setLoading(true);
       setError("");
@@ -39,7 +39,7 @@ export default function SearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [query, type]);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -47,11 +47,11 @@ export default function SearchPage() {
     }, 0);
 
     return () => window.clearTimeout(timer);
-  }, [runSearch]);
+  }, []);
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void runSearch();
+    void runSearch(query, type);
   }
 
   return (
@@ -105,7 +105,7 @@ export default function SearchPage() {
             title="搜索请求失败"
             className="mt-4"
             actions={
-              <button type="button" className="ghost-button" onClick={() => void runSearch()}>
+              <button type="button" className="ghost-button" onClick={() => void runSearch(query, type)}>
                 重试
               </button>
             }

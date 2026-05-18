@@ -13,6 +13,11 @@ const PORT = Number(process.env.PORT || 9001);
 const app = express();
 const defaultAllowedOrigins = [
   "http://heikesong.mexqf.top",
+  "https://heikesong.mexqf.top",
+  "http://8.162.14.195",
+  "https://8.162.14.195",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
   "http://localhost:9000",
   "http://127.0.0.1:9000",
   "http://localhost:4173",
@@ -22,6 +27,21 @@ const allowedOrigins = String(process.env.CORS_ALLOWED_ORIGINS || defaultAllowed
   .split(",")
   .map((item) => item.trim())
   .filter(Boolean);
+const flexibleAllowedHosts = new Set(["heikesong.mexqf.top", "8.162.14.195", "localhost", "127.0.0.1"]);
+const flexibleAllowedPorts = new Set(["", "3000", "4173", "9000"]);
+
+function isAllowedOrigin(origin) {
+  if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    return true;
+  }
+
+  try {
+    const parsed = new URL(origin);
+    return flexibleAllowedHosts.has(parsed.hostname) && flexibleAllowedPorts.has(parsed.port);
+  } catch {
+    return false;
+  }
+}
 
 const upload = multer({
   dest: uploadsDir,
@@ -40,7 +60,7 @@ const upload = multer({
 app.use(
   cors({
     origin(origin, callback) {
-      if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true);
         return;
       }

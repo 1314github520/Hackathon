@@ -16,13 +16,7 @@ npm install
 
 ### 1.3 配置环境变量
 
-默认示例先使用 JSON，复制一份环境变量文件即可：
-
-```bash
-cp .env.example .env
-```
-
-默认配置如下：
+默认先直接编辑 `.env`，推荐配置如下：
 
 ```env
 PORT=9001
@@ -123,16 +117,6 @@ npm install
 ```
 
 ### 4.5 配置生产环境变量
-
-```bash
-cp .env.example .env
-```
-
-如果你已经用了我写好的服务器配置，也可以直接：
-
-```bash
-cp .env.server .env
-```
 
 把 `.env` 改成：
 

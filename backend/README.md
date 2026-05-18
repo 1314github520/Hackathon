@@ -50,10 +50,9 @@ PORT=9001
 DATABASE_PROVIDER=json
 ```
 
-如果要切换到 MySQL：
+如果要切换到 MySQL，直接修改 `.env` 后执行：
 
 ```bash
-cp .env.example .env
 npm run db:generate
 npx prisma db push
 npm run dev

@@ -11,10 +11,11 @@
 - [技术栈](#技术栈)
 - [快速开始](#快速开始)
 - [演示账号与数据](#演示账号与数据)
+- [开发命令](#开发命令)
 - [推荐演示路线](#推荐演示路线)
 - [目录结构](#目录结构)
 - [关键页面与接口](#关键页面与接口)
-- [文档资产](#文档资产)
+- [相关文档](#相关文档)
 - [当前边界](#当前边界)
 - [后续建议](#后续建议)
 - [License](#license)
@@ -155,8 +156,8 @@ npm run dev
 
 后端已经提供 Prisma Schema 和 MySQL 迁移脚本。需要 MySQL 时，可以按下面的顺序配置：
 
-1. 将 `backend/.env.example` 复制为 `backend/.env`
-2. 修改 `.env` 中的 `DATABASE_URL`
+1. 直接修改 `backend/.env`
+2. 补充 `.env` 中的 `DATABASE_URL`
 3. 将 `DATABASE_PROVIDER` 设为 `mysql`
 4. 执行以下命令
 
@@ -180,7 +181,7 @@ npm run db:seed:mysql
 - `NEXT_PUBLIC_API_BASE=/api-bridge`
 - `API_SERVER_URL=http://localhost:9001`
 
-如果你希望手动指定，可新建 `frontend-design/web/.env.local`：
+如果你希望手动指定，可直接编辑 `frontend-design/web/.env`：
 
 ```env
 NEXT_PUBLIC_API_BASE=/api-bridge
@@ -214,6 +215,35 @@ python -m http.server 4173
 - 事件：喷气时代来临
 - 人物：乔·萨特
 
+## 开发命令
+
+### 后端
+
+在 `backend` 目录下可使用以下命令：
+
+| 命令 | 说明 |
+| --- | --- |
+| `npm run dev` | 启动后端服务 |
+| `npm run start` | 以生产方式启动后端服务 |
+| `npm run db:generate` | 生成 Prisma Client |
+| `npm run db:push` | 将 Prisma Schema 推送到数据库 |
+| `npm run db:migrate` | 执行 Prisma 迁移部署 |
+| `npm run db:studio` | 打开 Prisma Studio |
+| `npm run db:seed:mysql` | 将 JSON 演示数据导入 MySQL |
+
+### 前端
+
+在 `frontend-design/web` 目录下可使用以下命令：
+
+| 命令 | 说明 |
+| --- | --- |
+| `npm run dev` | 启动开发环境，端口为 `9000` |
+| `npm run build` | 构建生产版本 |
+| `npm run start` | 启动生产构建结果，端口为 `9000` |
+| `npm run lint` | 执行 ESLint 检查 |
+| `npm run test` | 运行 Vitest 测试 |
+| `npm run check` | 执行 TypeScript、ESLint 和 Vitest 一体检查 |
+
 ## 推荐演示路线
 
 如果你要做比赛答辩，推荐按下面顺序演示：
@@ -242,7 +272,7 @@ Hackathon/
 │  │  ├─ validation.js          # 航空器字段校验
 │  │  └─ scripts/
 │  │     └─ migrate-json-to-mysql.js
-│  ├─ .env.example
+│  ├─ .env
 │  ├─ DEPLOY.md
 │  ├─ README.md
 │  └─ package.json
@@ -294,9 +324,9 @@ Hackathon/
 - `backend/README.md`
 - `frontend-design/web/README.md`
 
-## 文档资产
+## 相关文档
 
-仓库内已经包含多份可直接用于继续开发或整理答辩材料的文档：
+仓库内已经包含多份可直接用于继续开发、部署或整理答辩材料的文档：
 
 - `backend/README.md`：后端接口和本地运行说明
 - `backend/DEPLOY.md`：后端部署说明

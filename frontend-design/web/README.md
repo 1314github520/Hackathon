@@ -15,28 +15,14 @@ npm install
 
 项目默认通过 Next.js rewrite 把 `/api-bridge/*` 代理到后端服务。
 
-本地联调服务器后端时，使用：
+前后端现在都只保留 `.env`，前端使用：
 
 ```env
 NEXT_PUBLIC_API_BASE=/api-bridge
 API_SERVER_URL=http://127.0.0.1:9001
 ```
 
-对应文件：
-
-- [`.env.local`](file:///C:/Users/Luck/Desktop/Hackathon/frontend-design/web/.env.local)
-- [`.env.example`](file:///C:/Users/Luck/Desktop/Hackathon/frontend-design/web/.env.example)
-
-如果把前端也部署到服务器，推荐使用：
-
-```env
-NEXT_PUBLIC_API_BASE=/api-bridge
-API_SERVER_URL=http://127.0.0.1:9001
-```
-
-对应文件：
-
-- [`.env.production`](file:///C:/Users/Luck/Desktop/Hackathon/frontend-design/web/.env.production)
+- 对应文件：[`.env`](file:///C:/Users/Luck/Desktop/Hackathon/frontend-design/web/.env)
 
 ### 3. 启动前端
 
