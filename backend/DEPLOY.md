@@ -16,7 +16,7 @@ npm install
 
 ### 1.3 配置环境变量
 
-默认示例改为 MySQL，复制一份环境变量文件即可：
+默认示例先使用 JSON，复制一份环境变量文件即可：
 
 ```bash
 cp .env.example .env
@@ -26,8 +26,7 @@ cp .env.example .env
 
 ```env
 PORT=9001
-DATABASE_PROVIDER=mysql
-DATABASE_URL="mysql://flyer:your_password@127.0.0.1:3306/flyer_guide"
+DATABASE_PROVIDER=json
 CORS_ALLOWED_ORIGINS=https://heikesong.mexqf.top,http://localhost:9000,http://127.0.0.1:9000
 ```
 
@@ -70,7 +69,7 @@ http://localhost:9001
 - `DATABASE_PROVIDER=json`：继续使用 `backend/data/db.json`
 - `DATABASE_PROVIDER=mysql`：使用 MySQL + Prisma
 
-服务器部署建议使用 MySQL。
+当前建议先用 JSON 跑通服务，确认前后端联通后再迁移到 MySQL。
 
 ## 4. Ubuntu 服务器部署
 
@@ -140,20 +139,21 @@ cp .env.server .env
 ```env
 PORT=9001
 CORS_ALLOWED_ORIGINS=https://heikesong.mexqf.top,http://localhost:9000,http://127.0.0.1:9000
-DATABASE_PROVIDER=mysql
-DATABASE_URL="mysql://qx:123456@127.0.0.1:3306/Hackathon"
+DATABASE_PROVIDER=json
 ```
 
 ### 4.6 初始化数据库表
 
-当前代码已提供 Prisma schema，可直接推送表结构：
+如果你暂时使用 JSON，这一步可以先跳过。
+
+如果后续要迁移到 MySQL，当前代码已提供 Prisma schema，可直接推送表结构：
 
 ```bash
 npm run db:generate
 npx prisma db push
 ```
 
-如果你本地已有 `backend/data/db.json`，可把演示数据导入 MySQL：
+如果你本地已有 `backend/data/db.json`，后续可把演示数据导入 MySQL：
 
 ```bash
 DATABASE_PROVIDER=mysql npm run db:seed:mysql
@@ -179,8 +179,7 @@ pm2 startup
 如果使用 `pm2`，建议先执行：
 
 ```bash
-export DATABASE_PROVIDER=mysql
-export DATABASE_URL="mysql://flyer:StrongPassword_123@127.0.0.1:3306/flyer_guide"
+export DATABASE_PROVIDER=json
 export PORT=9001
 export CORS_ALLOWED_ORIGINS="https://heikesong.mexqf.top,http://localhost:9000,http://127.0.0.1:9000"
 ```
@@ -214,13 +213,13 @@ server {
 
 建议按下面顺序操作，风险最低：
 
-1. 本地保留 `db.json` 继续开发验证
-2. 服务器安装 MySQL
-3. 上传项目并配置 `.env`
-4. 执行 `npx prisma db push`
-5. 执行 `DATABASE_PROVIDER=mysql npm run db:seed:mysql`
-6. 用 `curl http://127.0.0.1:9001/health` 检查服务
-7. 最后再接入 `nginx + pm2`
+1. 上传项目并配置 `.env` 为 `DATABASE_PROVIDER=json`
+2. 先用 `npm run dev` 或 `pm2` 跑通后端
+3. 用 `curl http://127.0.0.1:9001/health` 和公开接口检查服务
+4. 前后端联通稳定后，再安装并配置 MySQL
+5. 执行 `npx prisma db push`
+6. 执行 `DATABASE_PROVIDER=mysql npm run db:seed:mysql`
+7. 最后把 `.env` 切到 `mysql` 并重启服务
 
 ## 6. 当前说明
 

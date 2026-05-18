@@ -177,10 +177,10 @@
       "id": "31208f64-4553-4c38-8e05-10533578841b",
       "userId": "user-admin",
       "userType": "admin_user",
-      "accessToken": "2c793a666bf52332002e2e7a9b7c787020c5c2b78ba3320b",
+      "accessToken": "383b9e90141b6e5aba1b174353ffd34d724ee7c90bd43616",
       "refreshToken": "585d83e53e39b6d2b7dba7e24dbe52c68d1268d46e0c7cd5",
       "createdAt": "2026-05-17T10:22:50.581Z",
-      "expiresAt": "2026-05-17T11:22:50.581Z",
+      "expiresAt": "2026-05-18T03:36:33.217Z",
       "refreshExpiresAt": "2026-05-24T10:22:50.581Z",
       "revokedAt": null
     }

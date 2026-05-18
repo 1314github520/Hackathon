@@ -1,6 +1,6 @@
 # 飞行者图鉴后端 API 文档
 
-本目录是“飞行者图鉴”项目的本地后端服务，使用 `Node.js + Express` 实现，当前版本支持本地联调，也支持切换到 MySQL 部署到 Ubuntu 服务器。
+本目录是“飞行者图鉴”项目的本地后端服务，使用 `Node.js + Express` 实现，当前版本默认使用 JSON 文件存储，也支持后续切换到 MySQL 部署到 Ubuntu 服务器。
 
 服务特性：
 
@@ -41,13 +41,22 @@ npm install
 npm run dev
 ```
 
+服务启动时会自动加载 [`.env`](file:///C:/Users/Luck/Desktop/Hackathon/backend/.env)，Linux 服务器不需要再手动把环境变量逐个 `export` 才能读取配置。
+
+默认建议先用下面的配置启动：
+
+```env
+PORT=9001
+DATABASE_PROVIDER=json
+```
+
 如果要切换到 MySQL：
 
 ```bash
 cp .env.example .env
 npm run db:generate
 npx prisma db push
-DATABASE_PROVIDER=mysql npm run dev
+npm run dev
 ```
 
 默认地址：
@@ -62,7 +71,8 @@ DATABASE_PROVIDER=mysql npm run dev
 - 文件上传：`multer`
 - 跨域：`cors`
 - ORM：`Prisma`
-- 数据库：`MySQL`
+- 默认存储：`JSON`
+- 可选数据库：`MySQL`
 - 启动入口：[server.js](file:///C:/Users/Luck/Desktop/Hackathon/backend/src/server.js)
 - 本地部署说明：[DEPLOY.md](file:///C:/Users/Luck/Desktop/Hackathon/backend/DEPLOY.md)
 
@@ -168,7 +178,7 @@ Authorization: Bearer <accessToken>
 示例请求：
 
 ```bash
-curl http://localhost:3001/health
+curl http://localhost:9001/health
 ```
 
 示例响应：
@@ -201,7 +211,7 @@ curl http://localhost:3001/health
 示例请求：
 
 ```bash
-curl "http://localhost:3001/api/public/aircraft?keyword=A380&type=客机"
+curl "http://localhost:9001/api/public/aircraft?keyword=A380&type=客机"
 ```
 
 ### `POST /api/public/aircraft/compare`
@@ -223,7 +233,7 @@ curl "http://localhost:3001/api/public/aircraft?keyword=A380&type=客机"
 示例请求：
 
 ```bash
-curl http://localhost:3001/api/public/aircraft/airbus-a380
+curl http://localhost:9001/api/public/aircraft/airbus-a380
 ```
 
 ### `GET /api/public/events`
@@ -248,7 +258,7 @@ curl http://localhost:3001/api/public/aircraft/airbus-a380
 示例请求：
 
 ```bash
-curl "http://localhost:3001/api/public/search?q=客机"
+curl "http://localhost:9001/api/public/search?q=客机"
 ```
 
 ### `GET /api/public/recommendations`
@@ -265,7 +275,7 @@ curl "http://localhost:3001/api/public/search?q=客机"
 示例请求：
 
 ```bash
-curl "http://localhost:3001/api/public/recommendations?entityType=aircraft&entityId=airbus-a380"
+curl "http://localhost:9001/api/public/recommendations?entityType=aircraft&entityId=airbus-a380"
 ```
 
 ## 前台用户接口
@@ -529,7 +539,7 @@ Authorization: Bearer <accessToken>
 示例：
 
 ```bash
-curl -X POST http://localhost:3001/api/admin/media/upload \
+curl -X POST http://localhost:9001/api/admin/media/upload \
   -H "Authorization: Bearer <accessToken>" \
   -F "file=@./demo.png"
 ```
@@ -581,17 +591,19 @@ DATABASE_PROVIDER=mysql npm run db:seed:mysql
 ### 3. 关键说明
 
 - 当前接口层保持不变，`db.js` 会根据 `DATABASE_PROVIDER` 自动切换底层存储
-- 服务器建议固定使用 `DATABASE_PROVIDER=mysql`
+- 当前建议先用 `DATABASE_PROVIDER=json` 跑通服务
+- 服务稳定后再切换到 `DATABASE_PROVIDER=mysql`
 - 如果数据库信息不足，请先检查 `.env` 的 `DATABASE_URL` 是否正确
 
 ## 后续建议
 
 如果你准备把本地版迁到服务器，建议下一步按这个顺序继续：
 
-1. 完成 MySQL 初始化并导入演示数据
-2. 把前台登录、收藏、浏览历史页面真正接到这些接口
-3. 增加事件详情、人物详情、后台事件管理、后台人物管理接口
-4. 将上传文件迁移到 MinIO 或对象存储
-5. 用 `pm2 + nginx` 部署到 Ubuntu 服务器
+1. 先用 JSON 模式完成前后端联调与部署验证
+2. 再完成 MySQL 初始化并导入演示数据
+3. 把前台登录、收藏、浏览历史页面真正接到这些接口
+4. 增加事件详情、人物详情、后台事件管理、后台人物管理接口
+5. 将上传文件迁移到 MinIO 或对象存储
+6. 用 `pm2 + nginx` 部署到 Ubuntu 服务器
 
 服务器部署可以直接参考 [DEPLOY.md](file:///C:/Users/Luck/Desktop/Hackathon/backend/DEPLOY.md)。

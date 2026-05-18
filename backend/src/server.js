@@ -12,7 +12,7 @@ const { validateAircraftPayload } = require("./validation");
 const PORT = Number(process.env.PORT || 9001);
 const app = express();
 const defaultAllowedOrigins = [
-  "https://heikesong.mexqf.top",
+  "http://heikesong.mexqf.top",
   "http://localhost:9000",
   "http://127.0.0.1:9000",
   "http://localhost:4173",
